@@ -28,6 +28,11 @@ import (
 	"course/labrpc"
 )
 
+const (
+	electionTimeoutMin time.Duration = 250 * time.Millisecond
+	electionTimeoutMax time.Duration = 400 * time.Millisecond
+)
+
 // as each Raft peer becomes aware that successive log entries are
 // committed, the peer should send an ApplyMsg to the service (or
 // tester) on the same server, via the applyCh passed to Make(). set
@@ -49,6 +54,14 @@ type ApplyMsg struct {
 	SnapshotIndex int
 }
 
+type Role string
+
+const (
+	Follower  Role = "Follower"
+	Candidate Role = "Candidate"
+	Leader    Role = "Leader"
+)
+
 // A Go object implementing a single Raft peer.
 type Raft struct {
 	mu        sync.Mutex          // Lock to protect shared access to this peer's state
@@ -60,15 +73,21 @@ type Raft struct {
 	// Your data here (PartA, PartB, PartC).
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
+	role        Role
+	currentTerm int
+	votedFor    int // -1 means vote for none
 
+	electionStart   time.Time
+	electionTimeout time.Duration // random
 }
 
 // return currentTerm and whether this server
 // believes it is the leader.
 func (rf *Raft) GetState() (int, bool) {
-
-	var term int
-	var isleader bool
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	term := rf.currentTerm
+	isleader := rf.role == Leader
 	// Your code here (PartA).
 	return term, isleader
 }
@@ -124,17 +143,55 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 // field names must start with capital letters!
 type RequestVoteArgs struct {
 	// Your data here (PartA, PartB).
+	Term        int
+	CandidateId int
 }
 
 // example RequestVote RPC reply structure.
 // field names must start with capital letters!
 type RequestVoteReply struct {
 	// Your data here (PartA).
+	Term        int
+	VoteGranted bool // 已投票
 }
 
 // example RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (PartA, PartB).
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	// align
+	reply.Term = rf.currentTerm
+
+	if args.Term < rf.currentTerm {
+		reply.VoteGranted = false
+		return
+	}
+
+	// 投票
+	if args.Term > rf.currentTerm {
+		rf.role = Follower
+		rf.currentTerm = args.Term
+		// todo 这个要记住，follower 之后要重置为 -1
+		rf.votedFor = -1
+	}
+
+	// todo 这个顺序为啥会不能放在后面？？
+	if rf.votedFor != -1 {
+		reply.VoteGranted = false
+		return
+	}
+	if rf.votedFor == -1 {
+		reply.VoteGranted = true
+		rf.votedFor = args.CandidateId
+
+		// todo resetElectionTimerLocked
+		rf.electionStart = time.Now()
+		randRange := int64(electionTimeoutMax - electionTimeoutMin)
+		rf.electionTimeout = electionTimeoutMin + time.Duration(rand.Int63()%randRange)
+	}
+
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -210,12 +267,93 @@ func (rf *Raft) killed() bool {
 	return z == 1
 }
 
-func (rf *Raft) ticker() {
+func (rf *Raft) startElection(term int) bool {
+	votes := 0
+	askVoteFromPeer := func(peer int, args *RequestVoteArgs) {
+		reply := &RequestVoteReply{}
+		// todo 这里不用 lock 吗？？？？why？？
+		ok := rf.sendRequestVote(peer, args, reply)
+
+		rf.mu.Lock()
+		defer rf.mu.Unlock()
+		if !ok {
+			LOG(rf.me, rf.currentTerm, DDebug, "Ask vote from %d, Lost or error", peer)
+			return
+		}
+
+		if reply.Term > rf.currentTerm {
+			// become follower
+			rf.role = Follower
+			//if reply.Term > rf.currentTerm {
+			rf.votedFor = -1
+			//}
+			rf.currentTerm = reply.Term
+
+			return
+		}
+
+		// todo 为什么要 check context
+		if !(rf.role == Candidate && rf.currentTerm == term) {
+			return
+		}
+
+		// 计算投给自己的票数
+		if reply.VoteGranted {
+			votes++
+		}
+
+		if votes > len(rf.peers)/2 {
+			if rf.role == Candidate {
+				// become leader
+				rf.role = Leader
+				//rf.currentTerm++
+			}
+
+		}
+	}
+
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	// todo 为什么要判断任期一致
+	if rf.role == Candidate && rf.currentTerm == term {
+
+		// todo locked
+
+		for peer := 0; peer < len(rf.peers); peer++ {
+
+			if peer == rf.me {
+				votes++
+				continue
+			}
+
+			args := &RequestVoteArgs{
+				Term:        rf.currentTerm,
+				CandidateId: rf.me,
+			}
+
+			go askVoteFromPeer(peer, args)
+		}
+		return true
+	}
+	return false
+}
+
+func (rf *Raft) electionTicker() {
 	for rf.killed() == false {
 
+		rf.mu.Lock()
 		// Your code here (PartA)
 		// Check if a leader election should be started.
-
+		// 超时，Follower 成为 Candidate
+		if rf.role != Leader && time.Since(rf.electionStart) > rf.electionTimeout {
+			rf.role = Candidate
+			rf.currentTerm++
+			rf.votedFor = rf.me
+			// 开始选举
+			go rf.startElection(rf.currentTerm)
+		}
+		rf.mu.Unlock()
 		// pause for a random amount of time between 50 and 350
 		// milliseconds.
 		ms := 50 + (rand.Int63() % 300)
@@ -240,12 +378,15 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.me = me
 
 	// Your initialization code here (PartA, PartB, PartC).
+	rf.role = Follower
+	rf.currentTerm = 0
+	rf.votedFor = -1
 
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
 
 	// start ticker goroutine to start elections
-	go rf.ticker()
+	go rf.electionTicker()
 
 	return rf
 }

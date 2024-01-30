@@ -1,0 +1,554 @@
+Test (PartA): initial election ...
+000009 T0000 VOTE S0 Follower->Candidate, For T1
+000021 T0000 VOTE S2 Follower->Candidate, For T1
+000019 T0000 VOTE S1 Follower->Candidate, For T1
+000050 T0001 VOTE S2 -> S0, Reject, Already voted to S2
+000054 T0001 VOTE S1 -> S2, Reject, Already voted to S1
+000055 T0001 VOTE S1 -> S0, Reject, Already voted to S1
+000055 T0001 VOTE S2 -> S1, Reject, Already voted to S2
+000056 T0001 VOTE S0 -> S2, Reject, Already voted to S0
+000057 T0001 VOTE S0 -> S1, Reject, Already voted to S0
+000588 T0001 VOTE S2 Candidate->Candidate, For T2
+000592 T0001 LOG1 S1 Candidate->Follower, For T1->T2
+000592 T0002 VOTE S1 -> S2, vote granted
+000593 T0002 LEAD S2 Candidate->Leader, For T2
+000594 T0001 LOG1 S0 Candidate->Follower, For T1->T2
+000594 T0002 VOTE S0 -> S2, vote granted
+000598 T0002 VOTE S2 Lost context, abort RequestVoteReply for S0
+004096 T0002 VOTE S0 Follower->Candidate, For T3
+004098 T0002 LOG1 S2 Leader->Follower, For T2->T3
+004098 T0003 VOTE S2 -> S0, vote granted
+004099 T0003 LEAD S0 Candidate->Leader, For T3
+004100 T0002 LOG1 S1 Follower->Follower, For T2->T3
+004100 T0003 VOTE S1 -> S0, vote granted
+004100 T0003 VOTE S0 Lost context, abort RequestVoteReply for S1
+007282 T0003 VOTE S2 Follower->Candidate, For T4
+007286 T0003 LOG1 S1 Follower->Follower, For T3->T4
+007286 T0004 VOTE S1 -> S2, vote granted
+007287 T0004 LEAD S2 Candidate->Leader, For T4
+007288 T0003 LOG1 S0 Leader->Follower, For T3->T4
+007288 T0004 VOTE S0 -> S2, vote granted
+007289 T0004 VOTE S2 Lost context, abort RequestVoteReply for S0
+010474 T0004 VOTE S0 Follower->Candidate, For T5
+010482 T0004 LOG1 S2 Leader->Follower, For T4->T5
+010483 T0005 VOTE S2 -> S0, vote granted
+010484 T0005 LEAD S0 Candidate->Leader, For T5
+010485 T0004 LOG1 S1 Follower->Follower, For T4->T5
+010486 T0005 VOTE S1 -> S0, vote granted
+010487 T0005 VOTE S0 Lost context, abort RequestVoteReply for S1
+014471 T0005 VOTE S1 Follower->Candidate, For T6
+014476 T0005 LOG1 S0 Leader->Follower, For T5->T6
+014476 T0006 VOTE S0 -> S1, vote granted
+014476 T0005 LOG1 S2 Follower->Follower, For T5->T6
+014478 T0006 LEAD S1 Candidate->Leader, For T6
+014478 T0006 VOTE S2 -> S1, vote granted
+014481 T0006 VOTE S1 Lost context, abort RequestVoteReply for S2
+018076 T0006 VOTE S2 Follower->Candidate, For T7
+018079 T0006 LOG1 S1 Leader->Follower, For T6->T7
+018082 T0007 VOTE S1 -> S2, vote granted
+018083 T0007 LEAD S2 Candidate->Leader, For T7
+018085 T0006 LOG1 S0 Follower->Follower, For T6->T7
+018085 T0007 VOTE S0 -> S2, vote granted
+018086 T0007 VOTE S2 Lost context, abort RequestVoteReply for S0
+021630 T0007 VOTE S1 Follower->Candidate, For T8
+021640 T0007 LOG1 S2 Leader->Follower, For T7->T8
+021640 T0008 VOTE S2 -> S1, vote granted
+021640 T0007 LOG1 S0 Follower->Follower, For T7->T8
+021642 T0008 VOTE S0 -> S1, vote granted
+021643 T0008 LEAD S1 Candidate->Leader, For T8
+021645 T0008 VOTE S1 Lost context, abort RequestVoteReply for S0
+025366 T0008 VOTE S2 Follower->Candidate, For T9
+--- FAIL: TestInitialElectionPartA (2.54s)
+    config.go:470: servers disagree on term
+025402 T0008 LOG1 S0 Follower->Follower, For T8->T9
+025403 T0009 VOTE S0 -> S2, vote granted
+025405 T0009 LEAD S2 Candidate->Leader, For T9
+025403 T0008 LOG1 S1 Leader->Follower, For T8->T9
+025406 T0009 VOTE S1 -> S2, vote granted
+025408 T0009 VOTE S2 Lost context, abort RequestVoteReply for S1
+025416 T0000 VOTE S0 Follower->Candidate, For T1
+Test (PartA): election after network failure ...
+025420 T0000 VOTE S1 Follower->Candidate, For T1
+025421 T0000 VOTE S2 Follower->Candidate, For T1
+025423 T0001 VOTE S1 -> S0, Reject, Already voted to S1
+025423 T0001 VOTE S1 -> S2, Reject, Already voted to S1
+025427 T0001 VOTE S2 -> S1, Reject, Already voted to S2
+025428 T0001 VOTE S0 -> S2, Reject, Already voted to S0
+025431 T0001 VOTE S0 -> S1, Reject, Already voted to S0
+027438 T0001 VOTE S1 Candidate->Candidate, For T2
+027449 T0001 LOG1 S2 Candidate->Follower, For T1->T2
+027450 T0002 VOTE S2 -> S1, vote granted
+027452 T0001 LOG1 S0 Candidate->Follower, For T1->T2
+027453 T0002 VOTE S0 -> S1, vote granted
+027453 T0002 LEAD S1 Candidate->Leader, For T2
+027457 T0002 VOTE S1 Lost context, abort RequestVoteReply for S0
+030224 T0002 VOTE S0 Follower->Candidate, For T3
+030235 T0002 LOG1 S2 Follower->Follower, For T2->T3
+030235 T0003 VOTE S2 -> S0, vote granted
+030238 T0003 LEAD S0 Candidate->Leader, For T3
+034364 T0003 VOTE S2 Follower->Candidate, For T4
+034380 T0003 LOG1 S0 Leader->Follower, For T3->T4
+034381 T0004 VOTE S0 -> S2, vote granted
+034383 T0004 LEAD S2 Candidate->Leader, For T4
+039478 T0004 VOTE S0 Follower->Candidate, For T5
+039482 T0004 LOG1 S2 Leader->Follower, For T4->T5
+039482 T0005 VOTE S2 -> S0, vote granted
+039483 T0005 LEAD S0 Candidate->Leader, For T5
+039484 T0002 LOG1 S1 Leader->Follower, For T2->T5
+039484 T0005 VOTE S1 -> S0, vote granted
+039484 T0005 VOTE S0 Lost context, abort RequestVoteReply for S1
+043538 T0005 VOTE S2 Follower->Candidate, For T6
+043850 T0005 VOTE S1 Follower->Candidate, For T6
+044443 T0006 VOTE S1 Candidate->Candidate, For T7
+045863 T0007 VOTE S1 Candidate->Candidate, For T8
+045883 T0008 DBUG S1 Ask vote from S0, Lost or error
+047039 T0006 VOTE S2 Candidate->Candidate, For T7
+048260 T0007 VOTE S2 Candidate->Candidate, For T8
+049237 T0008 VOTE S1 Candidate->Candidate, For T9
+051541 T0008 VOTE S2 Candidate->Candidate, For T9
+051803 T0009 VOTE S1 Candidate->Candidate, For T10
+053526 T0009 DBUG S2 Ask vote from S0, Lost or error
+053678 T0010 VOTE S1 Candidate->Candidate, For T11
+054207 T0009 VOTE S2 Candidate->Candidate, For T10
+055470 T0011 VOTE S1 Candidate->Candidate, For T12
+056623 T0010 DBUG S2 Ask vote from S0, Lost or error
+056666 T0012 VOTE S1 Candidate->Candidate, For T13
+057639 T0010 VOTE S2 Candidate->Candidate, For T11
+057656 T0013 DBUG S1 Ask vote from S0, Lost or error
+058035 T0013 VOTE S1 Candidate->Candidate, For T14
+059136 T0014 VOTE S1 Candidate->Candidate, For T15
+059137 T0011 VOTE S2 Candidate->Candidate, For T12
+059997 T0015 DBUG S1 Ask vote from S0, Lost or error
+060826 T0015 VOTE S1 Candidate->Candidate, For T16
+060831 T0012 LOG1 S2 Candidate->Follower, For T12->T16
+060831 T0016 VOTE S2 -> S1, vote granted
+060832 T0016 LEAD S1 Candidate->Leader, For T16
+061606 T0016 DBUG S2 Ask vote from S1, Lost or error
+061998 T0016 DBUG S2 Ask vote from S0, Lost or error
+062860 T0016 DBUG S2 Ask vote from S0, Lost or error
+063015 T0016 DBUG S1 Ask vote from S0, Lost or error
+063430 T0016 DBUG S1 Ask vote from S2, Lost or error
+064648 T0016 VOTE S2 Follower->Candidate, For T17
+064653 T0005 LOG1 S0 Leader->Follower, For T5->T17
+064654 T0017 VOTE S0 -> S2, vote granted
+064654 T0016 LOG1 S1 Leader->Follower, For T16->T17
+064654 T0017 VOTE S1 -> S2, vote granted
+064656 T0017 LEAD S2 Candidate->Leader, For T17
+064656 T0017 VOTE S2 Lost context, abort RequestVoteReply for S1
+066455 T0017 DBUG S1 Ask vote from S0, Lost or error
+066745 T0017 DBUG S1 Ask vote from S2, Lost or error
+067324 T0017 DBUG S1 Ask vote from S0, Lost or error
+067497 T0017 VOTE S0 Follower->Candidate, For T18
+067502 T0017 LOG1 S1 Follower->Follower, For T17->T18
+067502 T0018 VOTE S1 -> S0, vote granted
+067503 T0018 LEAD S0 Candidate->Leader, For T18
+067510 T0017 LOG1 S2 Leader->Follower, For T17->T18
+067511 T0018 VOTE S2 -> S0, vote granted
+067511 T0018 VOTE S0 Lost context, abort RequestVoteReply for S2
+069750 T0018 DBUG S1 Ask vote from S0, Lost or error
+  ... Passed --   4.4  3   52    4278    0
+069863 T0000 VOTE S0 Follower->Candidate, For T1
+Test (PartA): multiple elections ...
+069867 T0000 VOTE S1 Follower->Candidate, For T1
+069867 T0000 VOTE S2 Follower->Candidate, For T1
+069868 T0000 LOG1 S6 Follower->Follower, For T0->T1
+069868 T0001 VOTE S6 -> S1, vote granted
+069868 T0001 VOTE S6 -> S2, Reject, Already voted to S1
+069869 T0000 VOTE S5 Follower->Candidate, For T1
+069869 T0000 VOTE S3 Follower->Candidate, For T1
+069870 T0001 VOTE S2 -> S5, Reject, Already voted to S2
+069870 T0001 VOTE S3 -> S5, Reject, Already voted to S3
+069871 T0001 VOTE S0 -> S3, Reject, Already voted to S0
+069871 T0001 VOTE S6 -> S3, Reject, Already voted to S1
+069872 T0001 VOTE S1 -> S2, Reject, Already voted to S1
+069872 T0001 VOTE S5 -> S1, Reject, Already voted to S5
+069869 T0000 VOTE S4 Follower->Candidate, For T1
+069872 T0001 VOTE S4 -> S5, Reject, Already voted to S4
+069872 T0001 VOTE S4 -> S1, Reject, Already voted to S4
+069873 T0001 VOTE S0 -> S2, Reject, Already voted to S0
+069873 T0001 VOTE S0 -> S1, Reject, Already voted to S0
+069874 T0001 VOTE S0 -> S5, Reject, Already voted to S0
+069874 T0001 VOTE S3 -> S2, Reject, Already voted to S3
+069875 T0001 VOTE S4 -> S2, Reject, Already voted to S4
+069876 T0001 VOTE S5 -> S2, Reject, Already voted to S5
+069876 T0001 VOTE S0 -> S4, Reject, Already voted to S0
+069877 T0001 VOTE S1 -> S5, Reject, Already voted to S1
+069877 T0001 VOTE S3 -> S1, Reject, Already voted to S3
+069877 T0001 VOTE S6 -> S4, Reject, Already voted to S1
+069878 T0001 VOTE S2 -> S1, Reject, Already voted to S2
+069878 T0001 VOTE S1 -> S4, Reject, Already voted to S1
+069878 T0001 VOTE S3 -> S4, Reject, Already voted to S3
+069879 T0001 VOTE S5 -> S4, Reject, Already voted to S5
+069879 T0001 VOTE S6 -> S5, Reject, Already voted to S1
+069880 T0001 VOTE S2 -> S4, Reject, Already voted to S2
+069881 T0001 VOTE S1 -> S3, Reject, Already voted to S1
+069881 T0001 VOTE S4 -> S3, Reject, Already voted to S4
+069881 T0001 VOTE S5 -> S3, Reject, Already voted to S5
+069881 T0001 VOTE S2 -> S3, Reject, Already voted to S2
+070801 T0001 VOTE S0 Candidate->Candidate, For T2
+070803 T0001 LOG1 S6 Follower->Follower, For T1->T2
+070803 T0002 VOTE S6 -> S0, vote granted
+070804 T0001 LOG1 S3 Candidate->Follower, For T1->T2
+070804 T0002 VOTE S3 -> S0, vote granted
+070804 T0001 LOG1 S4 Candidate->Follower, For T1->T2
+070804 T0002 VOTE S4 -> S0, vote granted
+070804 T0002 LEAD S0 Candidate->Leader, For T2
+070805 T0001 LOG1 S5 Candidate->Follower, For T1->T2
+070805 T0002 VOTE S5 -> S0, vote granted
+070805 T0001 LOG1 S1 Candidate->Follower, For T1->T2
+070805 T0002 VOTE S1 -> S0, vote granted
+070806 T0001 LOG1 S2 Candidate->Follower, For T1->T2
+070806 T0002 VOTE S2 -> S0, vote granted
+070805 T0002 VOTE S0 Lost context, abort RequestVoteReply for S5
+070809 T0002 VOTE S0 Lost context, abort RequestVoteReply for S1
+070809 T0002 VOTE S0 Lost context, abort RequestVoteReply for S2
+072477 T0018 DBUG S2 Ask vote from S0, Lost or error
+073303 T0018 DBUG S1 Ask vote from S2, Lost or error
+074418 T0002 VOTE S2 Follower->Candidate, For T3
+074420 T0002 LOG1 S6 Follower->Follower, For T2->T3
+074420 T0003 VOTE S6 -> S2, vote granted
+074421 T0002 LOG1 S3 Follower->Follower, For T2->T3
+074421 T0003 VOTE S3 -> S2, vote granted
+074422 T0002 LOG1 S1 Follower->Follower, For T2->T3
+074422 T0003 VOTE S1 -> S2, vote granted
+074422 T0003 LEAD S2 Candidate->Leader, For T3
+074425 T0002 LOG1 S5 Follower->Follower, For T2->T3
+074425 T0003 VOTE S5 -> S2, vote granted
+074425 T0003 VOTE S2 Lost context, abort RequestVoteReply for S5
+074425 T0002 LOG1 S4 Follower->Follower, For T2->T3
+074426 T0003 VOTE S4 -> S2, vote granted
+074426 T0003 VOTE S2 Lost context, abort RequestVoteReply for S4
+074434 T0002 LOG1 S0 Leader->Follower, For T2->T3
+074435 T0003 VOTE S0 -> S2, vote granted
+074435 T0003 VOTE S2 Lost context, abort RequestVoteReply for S0
+076838 T0018 DBUG S1 Ask vote from S2, Lost or error
+077827 T0003 VOTE S5 Follower->Candidate, For T4
+077834 T0003 LOG1 S2 Leader->Follower, For T3->T4
+077834 T0004 VOTE S2 -> S5, vote granted
+077834 T0003 LOG1 S4 Follower->Follower, For T3->T4
+077835 T0004 VOTE S4 -> S5, vote granted
+077834 T0003 LOG1 S1 Follower->Follower, For T3->T4
+077835 T0004 VOTE S1 -> S5, vote granted
+077836 T0004 LEAD S5 Candidate->Leader, For T4
+077837 T0003 LOG1 S3 Follower->Follower, For T3->T4
+077837 T0004 VOTE S3 -> S5, vote granted
+077838 T0004 VOTE S5 Lost context, abort RequestVoteReply for S3
+077939 T0003 VOTE S6 Follower->Candidate, For T4
+079063 T0004 VOTE S6 Candidate->Candidate, For T5
+079409 T0018 DBUG S0 Ask vote from S2, Lost or error
+079583 T0003 VOTE S0 Follower->Candidate, For T4
+080192 T0004 VOTE S0 Candidate->Candidate, For T5
+080196 T0005 VOTE S6 -> S0, Reject, Already voted to S6
+080196 T0004 LOG1 S2 Follower->Follower, For T4->T5
+080197 T0005 VOTE S2 -> S0, vote granted
+080198 T0004 LOG1 S3 Follower->Follower, For T4->T5
+080198 T0005 VOTE S3 -> S0, vote granted
+080511 T0005 VOTE S6 Candidate->Candidate, For T6
+080513 T0005 LOG1 S0 Candidate->Follower, For T5->T6
+080513 T0006 VOTE S0 -> S6, vote granted
+080526 T0005 LOG1 S2 Follower->Follower, For T5->T6
+080526 T0006 VOTE S2 -> S6, vote granted
+080731 T0004 VOTE S1 Follower->Candidate, For T5
+080733 T0005 LOG1 S3 Follower->Follower, For T5->T6
+080733 T0006 VOTE S3 -> S6, vote granted
+080733 T0006 LEAD S6 Candidate->Leader, For T6
+080970 T0004 VOTE S4 Follower->Candidate, For T5
+081179 T0005 DBUG S4 Ask vote from S0, Lost or error
+081775 T0005 DBUG S4 Ask vote from S3, Lost or error
+081860 T0018 DBUG S0 Ask vote from S1, Lost or error
+082113 T0005 VOTE S4 Candidate->Candidate, For T6
+082662 T0018 DBUG S2 Ask vote from S1, Lost or error
+082999 T0006 DBUG S0 Ask vote from S6, Lost or error
+083312 T0006 VOTE S2 Follower->Candidate, For T7
+083316 T0006 LOG1 S3 Follower->Follower, For T6->T7
+083316 T0007 VOTE S3 -> S2, vote granted
+083317 T0006 LOG1 S0 Follower->Follower, For T6->T7
+083317 T0007 VOTE S0 -> S2, vote granted
+083316 T0006 LOG1 S6 Leader->Follower, For T6->T7
+083318 T0007 VOTE S6 -> S2, vote granted
+083319 T0007 LEAD S2 Candidate->Leader, For T7
+083494 T0006 VOTE S4 Candidate->Candidate, For T7
+083781 T0005 VOTE S1 Candidate->Candidate, For T6
+084118 T0018 DBUG S2 Ask vote from S0, Lost or error
+084347 T0007 DBUG S4 Ask vote from S2, Lost or error
+084711 T0007 VOTE S4 Candidate->Candidate, For T8
+084745 T0018 DBUG S2 Ask vote from S1, Lost or error
+084903 T0006 DBUG S1 Ask vote from S6, Lost or error
+085448 T0018 DBUG S2 Ask vote from S1, Lost or error
+085722 T0006 VOTE S1 Candidate->Candidate, For T7
+086584 T0007 DBUG S6 Ask vote from S4, Lost or error
+086690 T0007 VOTE S3 Follower->Candidate, For T8
+086694 T0007 LOG1 S0 Follower->Follower, For T7->T8
+086694 T0008 VOTE S0 -> S3, vote granted
+086695 T0007 LOG1 S6 Follower->Follower, For T7->T8
+086695 T0008 VOTE S6 -> S3, vote granted
+086695 T0008 VOTE S4 -> S3, Reject, Already voted to S4
+086696 T0004 LOG1 S5 Leader->Follower, For T4->T8
+086696 T0008 VOTE S5 -> S3, vote granted
+086696 T0008 LEAD S3 Candidate->Leader, For T8
+086824 T0008 VOTE S4 Candidate->Candidate, For T9
+086826 T0008 LOG1 S6 Follower->Follower, For T8->T9
+086826 T0009 VOTE S6 -> S4, vote granted
+086828 T0008 LOG1 S0 Follower->Follower, For T8->T9
+086828 T0009 VOTE S0 -> S4, vote granted
+086830 T0008 LOG1 S3 Leader->Follower, For T8->T9
+086830 T0009 VOTE S3 -> S4, vote granted
+086831 T0009 LEAD S4 Candidate->Leader, For T9
+086832 T0008 LOG1 S5 Follower->Follower, For T8->T9
+086832 T0009 VOTE S5 -> S4, vote granted
+086833 T0009 VOTE S4 Lost context, abort RequestVoteReply for S5
+087682 T0009 DBUG S4 Ask vote from S3, Lost or error
+087775 T0018 DBUG S1 Ask vote from S2, Lost or error
+087922 T0009 DBUG S4 Ask vote from S1, Lost or error
+088231 T0009 DBUG S3 Ask vote from S2, Lost or error
+088777 T0007 VOTE S1 Candidate->Candidate, For T8
+089010 T0008 DBUG S1 Ask vote from S0, Lost or error
+089035 T0009 DBUG S6 Ask vote from S4, Lost or error
+089372 T0007 DBUG S2 Ask vote from S4, Lost or error
+089411 T0008 VOTE S1 Candidate->Candidate, For T9
+089756 T0009 DBUG S6 Ask vote from S5, Lost or error
+089940 T0009 DBUG S1 Ask vote from S5, Lost or error
+090370 T0009 DBUG S0 Ask vote from S5, Lost or error
+090493 T0009 DBUG S1 Ask vote from S4, Lost or error
+090993 T0009 VOTE S0 Follower->Candidate, For T10
+091527 T0009 VOTE S3 Follower->Candidate, For T10
+091531 T0009 LOG1 S6 Follower->Follower, For T9->T10
+091531 T0010 VOTE S6 -> S3, vote granted
+091534 T0007 LOG1 S2 Leader->Follower, For T7->T10
+091534 T0009 LOG1 S1 Candidate->Follower, For T9->T10
+091535 T0010 VOTE S1 -> S3, vote granted
+091534 T0010 VOTE S2 -> S3, vote granted
+091535 T0009 LOG1 S5 Follower->Follower, For T9->T10
+091536 T0010 VOTE S5 -> S3, vote granted
+091537 T0010 LEAD S3 Candidate->Leader, For T10
+091537 T0010 VOTE S3 Lost context, abort RequestVoteReply for S5
+091792 T0010 DBUG S0 Ask vote from S1, Lost or error
+092079 T0018 DBUG S1 Ask vote from S2, Lost or error
+092427 T0009 DBUG S4 Ask vote from S2, Lost or error
+092877 T0010 DBUG S1 Ask vote from S3, Lost or error
+093006 T0010 VOTE S0 Candidate->Candidate, For T11
+093680 T0011 DBUG S0 Ask vote from S3, Lost or error
+093735 T0011 DBUG S0 Ask vote from S2, Lost or error
+094745 T0011 DBUG S0 Ask vote from S5, Lost or error
+094842 T0009 DBUG S4 Ask vote from S0, Lost or error
+095245 T0010 VOTE S2 Follower->Candidate, For T11
+095251 T0018 DBUG S2 Ask vote from S0, Lost or error
+095400 T0010 DBUG S6 Ask vote from S0, Lost or error
+095483 T0011 VOTE S0 Candidate->Candidate, For T12
+095487 T0010 LOG1 S1 Follower->Follower, For T10->T12
+095487 T0012 VOTE S1 -> S0, vote granted
+095487 T0009 LOG1 S4 Leader->Follower, For T9->T12
+095487 T0012 VOTE S4 -> S0, vote granted
+095487 T0010 LOG1 S5 Follower->Follower, For T10->T12
+095488 T0012 VOTE S5 -> S0, vote granted
+095489 T0012 LEAD S0 Candidate->Leader, For T12
+095737 T0018 DBUG S1 Ask vote from S2, Lost or error
+095767 T0012 DBUG S1 Ask vote from S2, Lost or error
+096046 T0018 DBUG S1 Ask vote from S0, Lost or error
+096079 T0010 VOTE S6 Follower->Candidate, For T11
+096696 T0012 DBUG S1 Ask vote from S2, Lost or error
+096945 T0012 DBUG S0 Ask vote from S1, Lost or error
+097721 T0011 DBUG S6 Ask vote from S2, Lost or error
+097874 T0011 VOTE S6 Candidate->Candidate, For T12
+097913 T0012 DBUG S1 Ask vote from S5, Lost or error
+097914 T0011 VOTE S2 Candidate->Candidate, For T12
+098003 T0012 DBUG S4 Ask vote from S1, Lost or error
+098367 T0012 DBUG S1 Ask vote from S0, Lost or error
+098837 T0012 DBUG S6 Ask vote from S0, Lost or error
+099000 T0012 VOTE S5 Follower->Candidate, For T13
+099002 T0012 LOG1 S0 Leader->Follower, For T12->T13
+099002 T0013 VOTE S0 -> S5, vote granted
+099003 T0012 LOG1 S1 Follower->Follower, For T12->T13
+099003 T0013 VOTE S1 -> S5, vote granted
+099007 T0012 LOG1 S4 Follower->Follower, For T12->T13
+099007 T0013 VOTE S4 -> S5, vote granted
+099007 T0013 LEAD S5 Candidate->Leader, For T13
+099351 T0013 DBUG S0 Ask vote from S4, Lost or error
+099552 T0012 VOTE S6 Candidate->Candidate, For T13
+100035 T0013 DBUG S6 Ask vote from S1, Lost or error
+101107 T0013 DBUG S4 Ask vote from S3, Lost or error
+101357 T0012 VOTE S2 Candidate->Candidate, For T13
+101398 T0018 DBUG S2 Ask vote from S1, Lost or error
+101399 T0010 DBUG S3 Ask vote from S1, Lost or error
+101594 T0013 DBUG S0 Ask vote from S1, Lost or error
+102226 T0013 DBUG S4 Ask vote from S6, Lost or error
+102544 T0013 VOTE S6 Candidate->Candidate, For T14
+102574 T0013 DBUG S0 Ask vote from S4, Lost or error
+102847 T0013 VOTE S4 Follower->Candidate, For T14
+102848 T0013 LOG1 S0 Follower->Follower, For T13->T14
+102848 T0014 VOTE S0 -> S4, vote granted
+102849 T0013 LOG1 S1 Follower->Follower, For T13->T14
+102849 T0014 VOTE S1 -> S4, vote granted
+102850 T0010 LOG1 S3 Leader->Follower, For T10->T14
+102850 T0014 VOTE S3 -> S4, vote granted
+102850 T0014 LEAD S4 Candidate->Leader, For T14
+102920 T0014 DBUG S0 Ask vote from S6, Lost or error
+103210 T0013 DBUG S2 Ask vote from S1, Lost or error
+103226 T0018 DBUG S2 Ask vote from S1, Lost or error
+103282 T0014 DBUG S4 Ask vote from S5, Lost or error
+103293 T0014 DBUG S0 Ask vote from S3, Lost or error
+103553 T0018 DBUG S1 Ask vote from S0, Lost or error
+104258 T0013 VOTE S2 Candidate->Candidate, For T14
+104435 T0014 VOTE S6 Candidate->Candidate, For T15
+104675 T0014 DBUG S2 Ask vote from S5, Lost or error
+105532 T0015 DBUG S6 Ask vote from S0, Lost or error
+106900 T0014 VOTE S2 Candidate->Candidate, For T15
+106913 T0014 VOTE S0 Follower->Candidate, For T15
+106914 T0015 VOTE S6 -> S0, Reject, Already voted to S6
+106915 T0014 LOG1 S3 Follower->Follower, For T14->T15
+106915 T0015 VOTE S3 -> S0, vote granted
+106916 T0014 LOG1 S1 Follower->Follower, For T14->T15
+106916 T0015 VOTE S1 -> S0, vote granted
+107598 T0015 VOTE S6 Candidate->Candidate, For T16
+107599 T0015 LOG1 S0 Candidate->Follower, For T15->T16
+107599 T0016 VOTE S0 -> S6, vote granted
+107600 T0015 LOG1 S3 Follower->Follower, For T15->T16
+107600 T0016 VOTE S3 -> S6, vote granted
+107600 T0015 LOG1 S1 Follower->Follower, For T15->T16
+107600 T0016 VOTE S1 -> S6, vote granted
+107601 T0016 LEAD S6 Candidate->Leader, For T16
+107848 T0016 DBUG S0 Ask vote from S5, Lost or error
+108024 T0016 DBUG S3 Ask vote from S0, Lost or error
+108357 T0013 DBUG S5 Ask vote from S3, Lost or error
+108631 T0016 DBUG S6 Ask vote from S3, Lost or error
+108829 T0014 DBUG S4 Ask vote from S0, Lost or error
+109060 T0015 DBUG S2 Ask vote from S1, Lost or error
+109289 T0014 DBUG S4 Ask vote from S6, Lost or error
+109413 T0016 DBUG S6 Ask vote from S3, Lost or error
+109865 T0015 VOTE S2 Candidate->Candidate, For T16
+110052 T0016 DBUG S6 Ask vote from S5, Lost or error
+110248 T0016 DBUG S6 Ask vote from S2, Lost or error
+110890 T0016 VOTE S1 Follower->Candidate, For T17
+110891 T0016 LOG1 S6 Leader->Follower, For T16->T17
+110891 T0017 VOTE S6 -> S1, vote granted
+110892 T0016 LOG1 S0 Follower->Follower, For T16->T17
+110892 T0017 VOTE S0 -> S1, vote granted
+110893 T0016 LOG1 S3 Follower->Follower, For T16->T17
+110893 T0017 VOTE S3 -> S1, vote granted
+110894 T0017 LEAD S1 Candidate->Leader, For T17
+110894 T0013 LOG1 S5 Leader->Follower, For T13->T17
+110894 T0017 VOTE S5 -> S1, vote granted
+110894 T0017 VOTE S1 Lost context, abort RequestVoteReply for S5
+111028 T0014 DBUG S4 Ask vote from S1, Lost or error
+111571 T0017 DBUG S0 Ask vote from S3, Lost or error
+111819 T0016 DBUG S2 Ask vote from S3, Lost or error
+112488 T0017 DBUG S1 Ask vote from S2, Lost or error
+112675 T0017 DBUG S6 Ask vote from S3, Lost or error
+112775 T0016 VOTE S2 Candidate->Candidate, For T17
+113220 T0018 DBUG S2 Ask vote from S1, Lost or error
+113414 T0017 DBUG S6 Ask vote from S4, Lost or error
+114345 T0014 DBUG S4 Ask vote from S2, Lost or error
+114357 T0017 DBUG S6 Ask vote from S5, Lost or error
+114421 T0017 VOTE S0 Follower->Candidate, For T18
+114428 T0017 LOG1 S5 Follower->Follower, For T17->T18
+114428 T0017 LOG1 S6 Follower->Follower, For T17->T18
+114428 T0018 VOTE S6 -> S0, vote granted
+114429 T0017 LOG1 S1 Leader->Follower, For T17->T18
+114429 T0018 VOTE S1 -> S0, vote granted
+114428 T0018 VOTE S5 -> S0, vote granted
+114430 T0018 LEAD S0 Candidate->Leader, For T18
+114431 T0017 LOG1 S3 Follower->Follower, For T17->T18
+114431 T0018 VOTE S3 -> S0, vote granted
+114432 T0018 VOTE S0 Lost context, abort RequestVoteReply for S3
+114647 T0018 DBUG S0 Ask vote from S1, Lost or error
+114987 T0018 DBUG S0 Ask vote from S4, Lost or error
+115348 T0018 DBUG S1 Ask vote from S2, Lost or error
+115411 T0018 DBUG S6 Ask vote from S3, Lost or error
+115594 T0018 DBUG S6 Ask vote from S4, Lost or error
+115880 T0017 DBUG S2 Ask vote from S0, Lost or error
+115907 T0017 DBUG S2 Ask vote from S4, Lost or error
+116160 T0017 VOTE S2 Candidate->Candidate, For T18
+116513 T0014 DBUG S4 Ask vote from S1, Lost or error
+116664 T0018 VOTE S2 Candidate->Candidate, For T19
+116846 T0018 DBUG S1 Ask vote from S0, Lost or error
+116851 T0019 DBUG S2 Ask vote from S0, Lost or error
+116949 T0018 DBUG S1 Ask vote from S2, Lost or error
+117135 T0019 DBUG S2 Ask vote from S3, Lost or error
+117176 T0019 DBUG S2 Ask vote from S1, Lost or error
+117218 T0018 DBUG S6 Ask vote from S3, Lost or error
+117240 T0018 DBUG S6 Ask vote from S4, Lost or error
+117394 T0018 DBUG S0 Ask vote from S2, Lost or error
+117495 T0019 VOTE S2 Candidate->Candidate, For T20
+117499 T0018 DBUG S1 Ask vote from S5, Lost or error
+117849 T0020 DBUG S2 Ask vote from S5, Lost or error
+117935 T0018 DBUG S6 Ask vote from S1, Lost or error
+118537 T0018 DBUG S6 Ask vote from S4, Lost or error
+118719 T0018 VOTE S6 Follower->Candidate, For T19
+119158 T0018 DBUG S1 Ask vote from S3, Lost or error
+119159 T0018 VOTE S5 Follower->Candidate, For T19
+119161 T0018 LOG1 S3 Follower->Follower, For T18->T19
+119161 T0019 VOTE S3 -> S5, vote granted
+119163 T0014 LOG1 S4 Leader->Follower, For T14->T19
+119163 T0019 VOTE S4 -> S5, vote granted
+119161 T0018 LOG1 S0 Leader->Follower, For T18->T19
+119165 T0019 VOTE S0 -> S5, vote granted
+119186 T0018 LOG1 S1 Follower->Follower, For T18->T19
+119186 T0019 VOTE S1 -> S5, vote granted
+119188 T0019 LEAD S5 Candidate->Leader, For T19
+119189 T0019 VOTE S5 Lost context, abort RequestVoteReply for S0
+119326 T0020 VOTE S2 Candidate->Candidate, For T21
+119351 T0021 DBUG S2 Ask vote from S6, Lost or error
+119681 T0019 DBUG S4 Ask vote from S6, Lost or error
+119728 T0021 DBUG S2 Ask vote from S0, Lost or error
+119911 T0018 DBUG S1 Ask vote from S0, Lost or error
+119985 T0019 DBUG S6 Ask vote from S1, Lost or error
+120043 T0019 VOTE S6 Candidate->Candidate, For T20
+120465 T0021 DBUG S2 Ask vote from S4, Lost or error
+120644 T0019 DBUG S1 Ask vote from S3, Lost or error
+120875 T0019 DBUG S1 Ask vote from S4, Lost or error
+120960 T0021 DBUG S2 Ask vote from S1, Lost or error
+120991 T0020 DBUG S6 Ask vote from S2, Lost or error
+121208 T0019 DBUG S1 Ask vote from S5, Lost or error
+121403 T0021 VOTE S2 Candidate->Candidate, For T22
+121414 T0019 LOG1 S1 Follower->Follower, For T19->T22
+121415 T0022 VOTE S1 -> S2, vote granted
+121416 T0019 LOG1 S0 Follower->Follower, For T19->T22
+121416 T0022 VOTE S0 -> S2, vote granted
+121417 T0019 LOG1 S3 Follower->Follower, For T19->T22
+121417 T0022 VOTE S3 -> S2, vote granted
+121418 T0020 LOG1 S6 Candidate->Follower, For T20->T22
+121418 T0022 VOTE S6 -> S2, vote granted
+121419 T0019 LOG1 S4 Follower->Follower, For T19->T22
+121419 T0022 VOTE S4 -> S2, vote granted
+121419 T0022 LEAD S2 Candidate->Leader, For T22
+121420 T0019 LOG1 S5 Leader->Follower, For T19->T22
+121420 T0022 VOTE S5 -> S2, vote granted
+121421 T0022 VOTE S2 Lost context, abort RequestVoteReply for S4
+121421 T0022 VOTE S2 Lost context, abort RequestVoteReply for S5
+121421 T0022 VOTE S2 Lost context, abort RequestVoteReply for S1
+121926 T0022 DBUG S2 Ask vote from S0, Lost or error
+122064 T0022 DBUG S1 Ask vote from S0, Lost or error
+122568 T0022 DBUG S4 Ask vote from S6, Lost or error
+122664 T0018 DBUG S1 Ask vote from S2, Lost or error
+122856 T0022 DBUG S0 Ask vote from S4, Lost or error
+123044 T0022 DBUG S6 Ask vote from S2, Lost or error
+123302 T0018 DBUG S2 Ask vote from S1, Lost or error
+123306 T0022 DBUG S6 Ask vote from S4, Lost or error
+123694 T0022 DBUG S0 Ask vote from S6, Lost or error
+123842 T0022 DBUG S6 Ask vote from S2, Lost or error
+123901 T0022 DBUG S0 Ask vote from S5, Lost or error
+124366 T0022 VOTE S3 Follower->Candidate, For T23
+124369 T0022 LOG1 S6 Follower->Follower, For T22->T23
+124369 T0023 VOTE S6 -> S3, vote granted
+124371 T0022 LOG1 S0 Follower->Follower, For T22->T23
+124371 T0023 VOTE S0 -> S3, vote granted
+124373 T0022 LOG1 S1 Follower->Follower, For T22->T23
+124373 T0023 VOTE S1 -> S3, vote granted
+124374 T0023 LEAD S3 Candidate->Leader, For T23
+124375 T0022 LOG1 S2 Leader->Follower, For T22->T23
+124375 T0023 VOTE S2 -> S3, vote granted
+124376 T0023 VOTE S3 Lost context, abort RequestVoteReply for S2
+124377 T0022 LOG1 S4 Follower->Follower, For T22->T23
+124377 T0023 VOTE S4 -> S3, vote granted
+124378 T0023 VOTE S3 Lost context, abort RequestVoteReply for S4
+124380 T0022 LOG1 S5 Follower->Follower, For T22->T23
+124380 T0023 VOTE S5 -> S3, vote granted
+124381 T0023 VOTE S3 Lost context, abort RequestVoteReply for S5
+124382 T0023 DBUG S2 Ask vote from S3, Lost or error
+124588 T0023 DBUG S6 Ask vote from S3, Lost or error
+124936 T0023 DBUG S1 Ask vote from S4, Lost or error
+124974 T0023 DBUG S6 Ask vote from S2, Lost or error
+  ... Passed --   5.5  7  336   27790    0
+FAIL
+exit status 1
+FAIL	course/raft	13.115s

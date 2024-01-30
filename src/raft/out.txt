@@ -1,0 +1,400 @@
+000009 T0000 VOTE S0 Follower->Candidate, For T1
+&{{0 0} 0xc000083040 0 0xc0000b81e0 3 [0xc0000e2080 0xc0000e2180 0xc0000e2200] [  ] [true true true] [0xc0000a9a00 0xc0000a9d40 0xc0000a9e00] [[BUXoXF2aeYpesaBTsuf8 JyjIAHgrQgTx4SYKmHHk S9JYX1Vcw4V_s3r2HIVb] [I099umJEIcPiUIXvcjOE ULQVfEKOUPne-vpTk56Z iiOb4ihPaGJwyx3q_d0M] [N0H7fneroJFp4RCPSBgm NTlDP6wUPP_4_86v0XkB IYOr4W-tVbn8fLOWAvms]] [map[] map[] map[]] [0 0 0] {13935791205488238856 2009584 0x13cadc0} {0 0 <nil>} 0 0 0 0 0}
+Test (PartA): initial election ...
+000053 T0000 VOTE S2 Follower->Candidate, For T1
+000039 T0000 VOTE S1 Follower->Candidate, For T1
+000076 T0001 VOTE S0 -> S0, Reject, Already voted to S0
+000077 T0001 VOTE S1 -> S1, Reject, Already voted to S1
+000079 T0001 VOTE S2 -> S2, Reject, Already voted to S2
+000084 T0001 LEAD S0 Candidate->Leader, For T1
+000085 T0001 LEAD S2 Candidate->Leader, For T1
+000087 T0001 LOG1 S2 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+000089 T0001 LEAD S1 Candidate->Leader, For T1
+000092 T0001 LOG1 S1 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+000095 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+000095 T0001 LOG1 S0 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+000098 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+000100 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+002597 T0001 LOG1 S2 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+002599 T0001 LOG1 S1 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+002597 T0001 LOG1 S0 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+004104 T0001 VOTE S1 Follower->Candidate, For T2
+004112 T0002 VOTE S1 -> S1, Reject, Already voted to S1
+004114 T0002 LEAD S1 Candidate->Leader, For T2
+004116 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+004122 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+006627 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+006627 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+009128 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+009131 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+011645 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+011645 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+014149 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+014172 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+016657 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+016657 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+019170 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+019172 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+021674 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+021680 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+024183 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+024183 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+026695 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+026695 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+029205 T0002 LOG1 S2 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+029206 T0002 LOG1 S0 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+  ... Passed --   3.1  3   31    3793    0
+Test (PartA): election after network failure ...
+031125 T0000 VOTE S0 Follower->Candidate, For T1
+031126 T0000 VOTE S1 Follower->Candidate, For T1
+031129 T0001 VOTE S0 -> S0, Reject, Already voted to S0
+031130 T0000 VOTE S2 Follower->Candidate, For T1
+031131 T0001 VOTE S2 -> S2, Reject, Already voted to S2
+031133 T0001 LEAD S2 Candidate->Leader, For T1
+031129 T0001 VOTE S1 -> S1, Reject, Already voted to S1
+031143 T0001 LOG1 S0 Candidate->Follower, For T%!s(int=1)->T%!s(int=1)
+031144 T0001 VOTE S0 Lost context, abort RequestVoteReply for S0
+031145 T0001 LOG1 S1 Candidate->Follower, For T%!s(int=1)->T%!s(int=1)
+031146 T0001 VOTE S1 Lost context, abort RequestVoteReply for S1
+033646 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+033650 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+036156 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+036157 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+040828 T0001 VOTE S0 Follower->Candidate, For T2
+040836 T0002 VOTE S0 -> S0, Reject, Already voted to S0
+040839 T0002 LEAD S0 Candidate->Leader, For T2
+040842 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+041162 T0002 LOG2 S1 <- S2, Reject log, Higher term, T1<T2
+041162 T0002 LOG2 S0 <- S2, Reject log, Higher term, T1<T2
+043354 T0001 LOG1 S2 Leader->Follower, For T%!s(int=1)->T%!s(int=2)
+043357 T0002 LOG1 S1 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+043668 T0002 LOG1 S2 Lost leader[%!d(raft.Role=Follower)] to %!s(int=2)[T%!d(MISSING)]
+048462 T0002 VOTE S1 Follower->Candidate, For T3
+048987 T0002 VOTE S2 Follower->Candidate, For T3
+048995 T0003 VOTE S2 -> S2, Reject, Already voted to S2
+048996 T0003 LEAD S2 Candidate->Leader, For T3
+051382 T0003 VOTE S1 Candidate->Candidate, For T4
+052202 T0004 VOTE S1 Candidate->Candidate, For T5
+053440 T0002 LOG1 S0 -> S1, Lost or crashed
+054403 T0003 LOG1 S2 -> S1, Lost or crashed
+055545 T0005 VOTE S1 Candidate->Candidate, For T6
+057241 T0002 LOG1 S0 -> S2, Lost or crashed
+058498 T0006 VOTE S1 Candidate->Candidate, For T7
+059977 T0003 LOG1 S2 -> S0, Lost or crashed
+060348 T0002 LOG1 S0 -> S2, Lost or crashed
+061496 T0003 LOG1 S2 -> S0, Lost or crashed
+061805 T0003 LOG1 S2 -> S1, Lost or crashed
+061820 T0007 VOTE S1 Candidate->Candidate, For T8
+062014 T0008 DBUG S1 Ask vote from S1, Lost or error
+062681 T0003 LOG1 S2 -> S1, Lost or crashed
+063181 T0008 VOTE S1 Candidate->Candidate, For T9
+--- FAIL: TestReElectionPartA (3.45s)
+    config.go:484: expected no leader among connected servers, but 2 claims to be leader
+Test (PartA): multiple elections ...
+065583 T0000 VOTE S0 Follower->Candidate, For T1
+065587 T0001 VOTE S0 -> S0, Reject, Already voted to S0
+065590 T0001 LEAD S0 Candidate->Leader, For T1
+065594 T0000 LOG1 S6 Follower->Follower, For T%!s(int=0)->T%!s(int=1)
+065596 T0000 VOTE S1 Follower->Candidate, For T1
+065597 T0001 VOTE S1 -> S1, Reject, Already voted to S1
+065598 T0001 LEAD S1 Candidate->Leader, For T1
+065600 T0001 LOG1 S6 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065602 T0000 VOTE S2 Follower->Candidate, For T1
+065603 T0001 VOTE S2 -> S2, Reject, Already voted to S2
+065605 T0001 LEAD S2 Candidate->Leader, For T1
+065608 T0001 LOG1 S6 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065609 T0000 VOTE S3 Follower->Candidate, For T1
+065610 T0001 VOTE S3 -> S3, Reject, Already voted to S3
+065612 T0000 VOTE S4 Follower->Candidate, For T1
+065613 T0000 LOG1 S5 Follower->Follower, For T%!s(int=0)->T%!s(int=1)
+065613 T0001 VOTE S4 -> S4, Reject, Already voted to S4
+065613 T0001 LEAD S4 Candidate->Leader, For T1
+065614 T0001 LOG1 S6 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065614 T0001 LEAD S3 Candidate->Leader, For T1
+065615 T0001 LOG1 S0 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+065615 T0001 LOG1 S1 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+065616 T0001 LOG1 S6 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065616 T0001 LOG1 S2 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+065617 T0001 LOG1 S3 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+065617 T0001 LOG1 S5 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065618 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065618 T0001 LOG1 S3 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065618 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065619 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065619 T0001 LOG1 S3 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065620 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065620 T0001 LOG1 S4 Leader->Follower, For T%!s(int=1)->T%!s(int=1)
+065620 T0001 LOG1 S4 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065620 T0001 LOG1 S5 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065621 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065622 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065622 T0001 LOG1 S3 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065622 T0001 LOG1 S5 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065622 T0001 LOG1 S4 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065623 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065624 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065624 T0001 LOG1 S4 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065624 T0001 LOG1 S0 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065624 T0001 LOG1 S5 Follower->Follower, For T%!s(int=1)->T%!s(int=1)
+065847 T0009 DBUG S1 Ask vote from S1, Lost or error
+067242 T0002 LOG1 S0 -> S1, Lost or crashed
+068101 T0001 LOG1 S0 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+068101 T0001 LOG1 S1 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+068106 T0001 LOG1 S2 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+068117 T0001 LOG1 S4 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+068120 T0001 LOG1 S3 Lost leader[%!d(raft.Role=Follower)] to %!s(int=1)[T%!d(MISSING)]
+068838 T0001 VOTE S0 Follower->Candidate, For T2
+068842 T0002 VOTE S0 -> S0, Reject, Already voted to S0
+068845 T0002 LEAD S0 Candidate->Leader, For T2
+068847 T0001 LOG1 S3 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+068849 T0001 LOG1 S1 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+068852 T0001 LOG1 S4 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+068856 T0001 LOG1 S2 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+068856 T0001 LOG1 S5 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+068865 T0001 LOG1 S6 Follower->Follower, For T%!s(int=1)->T%!s(int=2)
+071369 T0002 LOG1 S1 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+071370 T0002 LOG1 S3 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+071372 T0002 LOG1 S4 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+071965 T0002 LOG1 S0 -> S1, Lost or crashed
+072043 T0002 LOG1 S0 -> S6, Lost or crashed
+073410 T0002 VOTE S2 Follower->Candidate, For T3
+073717 T0002 VOTE S5 Follower->Candidate, For T3
+073877 T0002 LOG1 S1 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+073878 T0002 LOG1 S3 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+073879 T0002 LOG1 S4 Follower->Follower, For T%!s(int=2)->T%!s(int=2)
+074243 T0003 VOTE S2 Candidate->Candidate, For T4
+074263 T0002 VOTE S6 Follower->Candidate, For T3
+075838 T0003 LOG1 S2 -> S0, Lost or crashed
+076094 T0004 VOTE S2 Candidate->Candidate, For T5
+076095 T0005 VOTE S2 -> S2, Reject, Already voted to S2
+076097 T0005 LEAD S2 Candidate->Leader, For T5
+076097 T0003 LOG1 S6 Candidate->Follower, For T%!s(int=3)->T%!s(int=5)
+076098 T0002 LOG1 S1 Follower->Follower, For T%!s(int=2)->T%!s(int=5)
+076099 T0002 LOG1 S4 Follower->Follower, For T%!s(int=2)->T%!s(int=5)
+076099 T0002 LOG1 S3 Follower->Follower, For T%!s(int=2)->T%!s(int=5)
+076694 T0003 VOTE S5 Candidate->Candidate, For T4
+078375 T0002 LOG1 S0 -> S2, Lost or crashed
+078608 T0005 LOG1 S6 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+078609 T0005 LOG1 S1 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+078610 T0005 LOG1 S3 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+078611 T0005 LOG1 S4 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+079705 T0009 DBUG S1 Ask vote from S1, Lost or error
+079784 T0004 VOTE S5 Candidate->Candidate, For T5
+081131 T0005 LOG1 S6 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+081133 T0005 LOG1 S5 Candidate->Follower, For T%!s(int=5)->T%!s(int=5)
+081131 T0005 LOG1 S4 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+081462 T0003 LOG1 S2 -> S0, Lost or crashed
+081516 T0002 LOG1 S0 -> S1, Lost or crashed
+081801 T0005 VOTE S3 Follower->Candidate, For T6
+081843 T0005 VOTE S1 Follower->Candidate, For T6
+083057 T0006 VOTE S3 Candidate->Candidate, For T7
+083199 T0002 LOG1 S0 -> S6, Lost or crashed
+083636 T0005 LOG1 S6 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+083636 T0005 LOG1 S4 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+083639 T0005 LOG1 S5 Follower->Follower, For T%!s(int=5)->T%!s(int=5)
+083640 T0002 LOG1 S0 -> S2, Lost or crashed
+083764 T0006 VOTE S1 Candidate->Candidate, For T7
+083765 T0003 LOG1 S2 -> S1, Lost or crashed
+084698 T0002 LOG1 S0 -> S2, Lost or crashed
+085821 T0002 LOG1 S0 -> S1, Lost or crashed
+085840 T0007 VOTE S3 Candidate->Candidate, For T8
+085848 T0008 VOTE S3 -> S3, Reject, Already voted to S3
+085850 T0008 LEAD S3 Candidate->Leader, For T8
+085852 T0005 LOG1 S2 Leader->Follower, For T%!s(int=5)->T%!s(int=8)
+085852 T0005 LOG1 S6 Follower->Follower, For T%!s(int=5)->T%!s(int=8)
+085856 T0005 LOG1 S5 Follower->Follower, For T%!s(int=5)->T%!s(int=8)
+086137 T0008 LOG1 S2 Lost leader[%!d(raft.Role=Follower)] to %!s(int=8)[T%!d(MISSING)]
+086267 T0002 LOG1 S0 -> S4, Lost or crashed
+086708 T0005 VOTE S4 Follower->Candidate, For T6
+086967 T0007 VOTE S1 Candidate->Candidate, For T8
+087814 T0008 DBUG S3 Ask vote from S3, Lost or error
+087935 T0002 LOG1 S0 -> S4, Lost or crashed
+088364 T0008 LOG1 S2 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+088365 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+088364 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+088705 T0008 DBUG S6 Ask vote from S6, Lost or error
+089641 T0006 VOTE S4 Candidate->Candidate, For T7
+089680 T0008 VOTE S1 Candidate->Candidate, For T9
+090610 T0003 LOG1 S2 -> S0, Lost or crashed
+091081 T0009 VOTE S1 Candidate->Candidate, For T10
+091128 T0007 VOTE S4 Candidate->Candidate, For T8
+091130 T0008 VOTE S4 -> S4, Reject, Already voted to S4
+091130 T0008 LEAD S4 Candidate->Leader, For T8
+091131 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+091132 T0002 LOG1 S0 Leader->Follower, For T%!s(int=2)->T%!s(int=8)
+091139 T0008 LOG1 S2 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+091139 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+091332 T0002 LOG1 S0 -> S1, Lost or crashed
+091438 T0008 LOG1 S0 Lost leader[%!d(raft.Role=Follower)] to %!s(int=8)[T%!d(MISSING)]
+091901 T0010 VOTE S1 Candidate->Candidate, For T11
+092174 T0008 LOG1 S0 -> S3, Lost or crashed
+092349 T0008 LOG1 S0 -> S4, Lost or crashed
+093088 T0008 LOG1 S0 -> S6, Lost or crashed
+093642 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+093643 T0008 LOG1 S0 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+093643 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+093644 T0008 LOG1 S2 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+093859 T0003 LOG1 S2 -> S1, Lost or crashed
+093975 T0008 LOG1 S4 -> S3, Lost or crashed
+094675 T0011 VOTE S1 Candidate->Candidate, For T12
+095893 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+095896 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+095893 T0008 LOG1 S4 Leader->Follower, For T%!s(int=8)->T%!s(int=8)
+096152 T0008 LOG1 S4 Lost leader[%!d(raft.Role=Follower)] to %!s(int=8)[T%!d(MISSING)]
+096820 T0008 LOG1 S0 -> S3, Lost or crashed
+096860 T0012 DBUG S1 Ask vote from S1, Lost or error
+096935 T0003 LOG1 S2 -> S0, Lost or crashed
+097176 T0012 VOTE S1 Candidate->Candidate, For T13
+097449 T0002 LOG1 S0 -> S2, Lost or crashed
+097480 T0008 VOTE S2 Follower->Candidate, For T9
+098400 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+098400 T0008 LOG1 S4 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+098400 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+098927 T0008 VOTE S0 Follower->Candidate, For T9
+099254 T0008 LOG1 S3 -> S0, Lost or crashed
+099508 T0013 VOTE S1 Candidate->Candidate, For T14
+099948 T0009 VOTE S0 Candidate->Candidate, For T10
+100132 T0014 VOTE S1 Candidate->Candidate, For T15
+100134 T0009 DBUG S1 Ask vote from S1, Lost or error
+100196 T0008 LOG1 S3 -> S6, Lost or crashed
+100445 T0010 LOG1 S0 -> S2, Lost or crashed
+100459 T0003 LOG1 S2 -> S1, Lost or crashed
+100571 T0010 LOG1 S0 -> S3, Lost or crashed
+100594 T0009 VOTE S2 Candidate->Candidate, For T10
+100900 T0008 DBUG S4 Ask vote from S4, Lost or error
+100901 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+100902 T0010 LOG1 S0 -> S6, Lost or crashed
+100903 T0010 LOG2 S0 <- S3, Reject log, Higher term, T8<T10
+100904 T0015 LOG2 S1 <- S3, Reject log, Higher term, T8<T15
+100904 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=8)
+101212 T0010 LOG1 S2 -> S3, Lost or crashed
+101378 T0002 LOG1 S0 -> S1, Lost or crashed
+101549 T0010 VOTE S0 Candidate->Candidate, For T11
+101552 T0011 VOTE S0 -> S0, Reject, Already voted to S0
+101553 T0011 LEAD S0 Candidate->Leader, For T11
+101553 T0008 LOG1 S6 Follower->Follower, For T%!s(int=8)->T%!s(int=11)
+101555 T0008 LOG1 S3 Leader->Follower, For T%!s(int=8)->T%!s(int=11)
+101555 T0008 LOG1 S5 Follower->Follower, For T%!s(int=8)->T%!s(int=11)
+101555 T0015 LOG2 S1 <- S0, Reject log, Higher term, T11<T15
+101667 T0010 VOTE S2 Candidate->Candidate, For T11
+101981 T0015 VOTE S1 Candidate->Candidate, For T16
+101989 T0016 VOTE S1 -> S1, Reject, Already voted to S1
+101990 T0016 LEAD S1 Candidate->Leader, For T16
+101993 T0011 LOG1 S0 Leader->Follower, For T%!s(int=11)->T%!s(int=16)
+102002 T0011 LOG1 S6 Follower->Follower, For T%!s(int=11)->T%!s(int=16)
+102006 T0011 LOG1 S5 Follower->Follower, For T%!s(int=11)->T%!s(int=16)
+102014 T0011 LOG1 S3 Follower->Follower, For T%!s(int=11)->T%!s(int=16)
+102239 T0016 LOG1 S0 -> S5, Lost or crashed
+102545 T0008 VOTE S4 Follower->Candidate, For T9
+103214 T0011 VOTE S2 Candidate->Candidate, For T12
+103411 T0016 LOG1 S3 Lost leader[%!d(raft.Role=Follower)] to %!s(int=16)[T%!d(MISSING)]
+103422 T0016 LOG1 S0 -> S5, Lost or crashed
+103864 T0016 DBUG S3 Ask vote from S3, Lost or error
+104030 T0009 VOTE S4 Candidate->Candidate, For T10
+104056 T0016 LOG1 S0 Lost leader[%!d(raft.Role=Follower)] to %!s(int=16)[T%!d(MISSING)]
+104494 T0016 LOG1 S6 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+104495 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+104495 T0016 LOG1 S0 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+104500 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+104810 T0003 LOG1 S2 -> S1, Lost or crashed
+104953 T0016 LOG1 S0 -> S2, Lost or crashed
+105415 T0012 LOG1 S2 -> S3, Lost or crashed
+105623 T0016 DBUG S1 Ask vote from S1, Lost or error
+105651 T0016 LOG1 S0 -> S2, Lost or crashed
+105837 T0012 VOTE S2 Candidate->Candidate, For T13
+105842 T0013 VOTE S2 -> S2, Reject, Already voted to S2
+105842 T0013 LEAD S2 Candidate->Leader, For T13
+105843 T0016 LOG2 S6 <- S2, Reject log, Higher term, T13<T16
+105844 T0016 LOG2 S3 <- S2, Reject log, Higher term, T13<T16
+105845 T0016 LOG2 S5 <- S2, Reject log, Higher term, T13<T16
+105844 T0016 LOG2 S1 <- S2, Reject log, Higher term, T13<T16
+106697 T0010 VOTE S4 Candidate->Candidate, For T11
+106903 T0016 DBUG S5 Ask vote from S5, Lost or error
+106997 T0016 LOG1 S6 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+106998 T0013 LOG1 S2 Leader->Follower, For T%!s(int=13)->T%!s(int=16)
+106999 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+107000 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+107697 T0009 DBUG S1 Ask vote from S1, Lost or error
+107830 T0016 LOG1 S3 -> S0, Lost or crashed
+107890 T0016 LOG1 S2 -> S0, Lost or crashed
+107968 T0002 LOG1 S0 -> S2, Lost or crashed
+108185 T0016 VOTE S0 Follower->Candidate, For T17
+108353 T0016 LOG1 S2 Lost leader[%!d(raft.Role=Follower)] to %!s(int=16)[T%!d(MISSING)]
+108354 T0017 LOG1 S0 -> S1, Lost or crashed
+108460 T0011 VOTE S4 Candidate->Candidate, For T12
+108811 T0016 DBUG S2 Ask vote from S2, Lost or error
+109245 T0016 LOG1 S3 -> S4, Lost or crashed
+109505 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+109507 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+109508 T0016 LOG1 S2 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+109505 T0016 LOG1 S6 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+109671 T0016 LOG1 S3 -> S2, Lost or crashed
+109914 T0002 LOG1 S0 -> S2, Lost or crashed
+110078 T0017 VOTE S0 Candidate->Candidate, For T18
+110078 T0016 DBUG S1 Ask vote from S1, Lost or error
+110333 T0012 VOTE S4 Candidate->Candidate, For T13
+110378 T0018 LOG1 S0 -> S6, Lost or crashed
+110938 T0016 LOG1 S2 -> S0, Lost or crashed
+111088 T0002 LOG1 S0 -> S2, Lost or crashed
+111088 T0018 VOTE S0 Candidate->Candidate, For T19
+111160 T0019 LOG1 S0 -> S5, Lost or crashed
+111205 T0002 LOG1 S0 -> S1, Lost or crashed
+111320 T0013 LOG1 S4 -> S3, Lost or crashed
+111530 T0016 LOG1 S3 -> S1, Lost or crashed
+111646 T0016 LOG1 S3 -> S2, Lost or crashed
+111734 T0016 DBUG S2 Ask vote from S2, Lost or error
+112006 T0013 LOG1 S4 Candidate->Follower, For T%!s(int=13)->T%!s(int=16)
+112008 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+112006 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+112486 T0019 LOG1 S0 -> S3, Lost or crashed
+112599 T0016 LOG1 S3 -> S0, Lost or crashed
+113031 T0016 VOTE S6 Follower->Candidate, For T17
+113094 T0016 DBUG S1 Ask vote from S1, Lost or error
+113671 T0019 VOTE S0 Candidate->Candidate, For T20
+113671 T0016 VOTE S2 Follower->Candidate, For T17
+113753 T0016 DBUG S4 Ask vote from S4, Lost or error
+113821 T0017 LOG1 S2 -> S5, Lost or crashed
+114261 T0020 LOG1 S0 -> S6, Lost or crashed
+114512 T0016 LOG1 S4 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+114513 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+114514 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=16)
+114663 T0017 VOTE S2 Candidate->Candidate, For T18
+115345 T0016 LOG1 S3 -> S0, Lost or crashed
+115641 T0017 VOTE S6 Candidate->Candidate, For T18
+115643 T0018 VOTE S6 -> S6, Reject, Already voted to S6
+115644 T0018 LEAD S6 Candidate->Leader, For T18
+115645 T0016 LOG1 S5 Follower->Follower, For T%!s(int=16)->T%!s(int=18)
+115646 T0018 LOG1 S2 Candidate->Follower, For T%!s(int=18)->T%!s(int=18)
+115646 T0016 LOG1 S3 Follower->Follower, For T%!s(int=16)->T%!s(int=18)
+115647 T0020 LOG2 S0 <- S6, Reject log, Higher term, T18<T20
+115647 T0016 LOG1 S4 Follower->Follower, For T%!s(int=16)->T%!s(int=18)
+115647 T0016 LOG1 S1 Leader->Follower, For T%!s(int=16)->T%!s(int=18)
+115940 T0018 LOG1 S2 -> S0, Lost or crashed
+116334 T0020 VOTE S0 Candidate->Candidate, For T21
+116338 T0021 VOTE S0 -> S0, Reject, Already voted to S0
+116340 T0021 LEAD S0 Candidate->Leader, For T21
+116342 T0018 LOG1 S6 Leader->Follower, For T%!s(int=18)->T%!s(int=21)
+116344 T0018 LOG1 S1 Follower->Follower, For T%!s(int=18)->T%!s(int=21)
+116346 T0018 LOG1 S2 Follower->Follower, For T%!s(int=18)->T%!s(int=21)
+116349 T0018 LOG1 S3 Follower->Follower, For T%!s(int=18)->T%!s(int=21)
+116350 T0018 LOG1 S4 Follower->Follower, For T%!s(int=18)->T%!s(int=21)
+116352 T0018 LOG1 S5 Follower->Follower, For T%!s(int=18)->T%!s(int=21)
+116376 T0003 LOG1 S2 -> S1, Lost or crashed
+117027 T0021 LOG1 S1 Lost leader[%!d(raft.Role=Follower)] to %!s(int=21)[T%!d(MISSING)]
+117325 T0021 LOG1 S3 -> S5, Lost or crashed
+117570 T0021 LOG1 S2 -> S5, Lost or crashed
+118115 T0021 LOG1 S0 -> S1, Lost or crashed
+118145 T0021 LOG1 S6 Lost leader[%!d(raft.Role=Follower)] to %!s(int=21)[T%!d(MISSING)]
+118423 T0021 LOG1 S0 -> S2, Lost or crashed
+118845 T0021 LOG1 S6 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+118848 T0021 LOG1 S4 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+118848 T0021 LOG1 S5 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+118848 T0021 LOG1 S1 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+118849 T0021 LOG1 S2 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+118853 T0021 LOG1 S3 Follower->Follower, For T%!s(int=21)->T%!s(int=21)
+119067 T0003 LOG1 S2 -> S0, Lost or crashed
+119855 T0021 DBUG S5 Ask vote from S5, Lost or error
+  ... Passed --   5.4  7  280   25528    0
+FAIL
+exit status 1
+FAIL	course/raft	12.833s
