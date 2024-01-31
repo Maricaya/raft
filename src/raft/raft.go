@@ -33,6 +33,13 @@ const (
 	electionTimeoutMax time.Duration = 400 * time.Millisecond
 )
 
+func (rf *Raft) resetElectionTimerLocked() {
+	rf.electionStart = time.Now()
+	randRange := int64(electionTimeoutMax - electionTimeoutMin)
+	// 时间随机
+	rf.electionTimeout = electionTimeoutMin + time.Duration(rand.Int63()%randRange)
+}
+
 // as each Raft peer becomes aware that successive log entries are
 // committed, the peer should send an ApplyMsg to the service (or
 // tester) on the same server, via the applyCh passed to Make(). set
@@ -61,6 +68,43 @@ const (
 	Candidate Role = "Candidate"
 	Leader    Role = "Leader"
 )
+
+/*
+任期大于当前任期 -> Follower
+重置 voteFor
+当前任期
+*/
+func (rf *Raft) becomeFollowerLocked(term int) {
+	if term < rf.currentTerm {
+		LOG(rf.me, rf.currentTerm, DError, "can not become follower, lower term: T%d", term)
+		return
+	}
+	LOG(rf.me, rf.currentTerm, DLog, "%s -> follower For T%v->T%v", rf.role, rf.currentTerm, term)
+	if term > rf.currentTerm {
+		rf.votedFor = -1
+	}
+	rf.role = Follower
+	rf.currentTerm = term
+}
+
+func (rf *Raft) becomeCandidateLocked() {
+	if rf.role == Leader {
+		LOG(rf.me, rf.currentTerm, DError, "Leader can not become Candidate")
+	}
+	LOG(rf.me, rf.currentTerm, DLog, "%s -> Candidate For T%v->T%v", rf.role, rf.currentTerm, rf.currentTerm+1)
+
+	rf.role = Candidate
+	rf.currentTerm++
+	rf.votedFor = rf.me
+}
+
+func (rf *Raft) becomeLeaderLocked() {
+	if rf.role != Candidate {
+		LOG(rf.me, rf.currentTerm, DError, "%s can not become Leader", rf.role)
+	}
+	LOG(rf.me, rf.currentTerm, DLog, "%s -> Leader For T%v->T%v", rf.role, rf.currentTerm, rf.currentTerm)
+	rf.role = Leader
+}
 
 // A Go object implementing a single Raft peer.
 type Raft struct {
@@ -168,16 +212,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		reply.VoteGranted = false
 		return
 	}
-
-	// 投票
 	if args.Term > rf.currentTerm {
-		rf.role = Follower
-		rf.currentTerm = args.Term
-		// todo 这个要记住，follower 之后要重置为 -1
-		rf.votedFor = -1
+		// 投票
+		rf.becomeFollowerLocked(args.Term)
 	}
-
-	// todo 这个顺序为啥会不能放在后面？？
+	// todo 这个顺序为啥会不能放在后面？？因为votedFor改变了
 	if rf.votedFor != -1 {
 		reply.VoteGranted = false
 		return
@@ -185,13 +224,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	if rf.votedFor == -1 {
 		reply.VoteGranted = true
 		rf.votedFor = args.CandidateId
+		rf.resetElectionTimerLocked()
+		LOG(rf.me, rf.currentTerm, DVote, "-> S%d, vote granted", args.CandidateId)
 
-		// todo resetElectionTimerLocked
-		rf.electionStart = time.Now()
-		randRange := int64(electionTimeoutMax - electionTimeoutMin)
-		rf.electionTimeout = electionTimeoutMin + time.Duration(rand.Int63()%randRange)
+		// todo 比较日志
 	}
-
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -272,6 +309,7 @@ func (rf *Raft) startElection(term int) bool {
 	askVoteFromPeer := func(peer int, args *RequestVoteArgs) {
 		reply := &RequestVoteReply{}
 		// todo 这里不用 lock 吗？？？？why？？
+		// 因为这里不是共享的信息
 		ok := rf.sendRequestVote(peer, args, reply)
 
 		rf.mu.Lock()
@@ -283,12 +321,7 @@ func (rf *Raft) startElection(term int) bool {
 
 		if reply.Term > rf.currentTerm {
 			// become follower
-			rf.role = Follower
-			//if reply.Term > rf.currentTerm {
-			rf.votedFor = -1
-			//}
-			rf.currentTerm = reply.Term
-
+			rf.becomeFollowerLocked(reply.Term)
 			return
 		}
 
@@ -304,9 +337,7 @@ func (rf *Raft) startElection(term int) bool {
 
 		if votes > len(rf.peers)/2 {
 			if rf.role == Candidate {
-				// become leader
-				rf.role = Leader
-				//rf.currentTerm++
+				rf.becomeLeaderLocked()
 			}
 
 		}
@@ -347,9 +378,7 @@ func (rf *Raft) electionTicker() {
 		// Check if a leader election should be started.
 		// 超时，Follower 成为 Candidate
 		if rf.role != Leader && time.Since(rf.electionStart) > rf.electionTimeout {
-			rf.role = Candidate
-			rf.currentTerm++
-			rf.votedFor = rf.me
+			rf.becomeCandidateLocked()
 			// 开始选举
 			go rf.startElection(rf.currentTerm)
 		}
