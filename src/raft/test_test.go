@@ -138,7 +138,8 @@ func TestBasicAgreePartB(t *testing.T) {
 		if nd > 0 {
 			t.Fatalf("some have committed before Start()")
 		}
-
+		// todo 看下这块是什么？？
+		print(index*100, "\n")
 		xindex := cfg.one(index*100, servers, false)
 		if xindex != index {
 			t.Fatalf("got index %v but expected %v", xindex, index)

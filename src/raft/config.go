@@ -561,8 +561,10 @@ func (cfg *config) one(cmd interface{}, expectedServers int, retry bool) int {
 	for time.Since(t0).Seconds() < 10 && cfg.checkFinished() == false {
 		// try all the servers, maybe one is the leader.
 		index := -1
+		print("index:", index, "\n")
 		for si := 0; si < cfg.n; si++ {
 			starts = (starts + 1) % cfg.n
+			print("starts", starts, "\n")
 			var rf *Raft
 			cfg.mu.Lock()
 			if cfg.connected[starts] {
@@ -571,23 +573,30 @@ func (cfg *config) one(cmd interface{}, expectedServers int, retry bool) int {
 			cfg.mu.Unlock()
 			if rf != nil {
 				index1, _, ok := rf.Start(cmd)
+				print(index1, ok, "1111\n")
+				// 不能 ok
 				if ok {
 					index = index1
 					break
 				}
 			}
 		}
-
+		print("index :", index, "\n")
 		if index != -1 {
 			// somebody claimed to be the leader and to have
 			// submitted our command; wait a while for agreement.
 			t1 := time.Now()
 			for time.Since(t1).Seconds() < 2 {
 				nd, cmd1 := cfg.nCommitted(index)
+				log.Printf("---cmd----: %v, --cmd1: %v--\n", cmd, cmd1)
+				//log.Printf(format, a...)
+				//print("nd: ", nd, "---cmd1: ", cmd1, "---cmd: %v", cmd, "\n")
 				if nd > 0 && nd >= expectedServers {
 					// committed
+					print("cmd1", cmd1, "---cmd", cmd, "\n")
 					if cmd1 == cmd {
 						// and it was the command we submitted.
+						// todo 没有一致的
 						return index
 					}
 				}
@@ -597,6 +606,7 @@ func (cfg *config) one(cmd interface{}, expectedServers int, retry bool) int {
 				cfg.t.Fatalf("one(%v) failed to reach agreement", cmd)
 			}
 		} else {
+			print("-1\n")
 			time.Sleep(50 * time.Millisecond)
 		}
 	}

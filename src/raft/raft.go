@@ -107,10 +107,31 @@ func (rf *Raft) becomeLeaderLocked() {
 	}
 	LOG(rf.me, rf.currentTerm, DLog, "%s -> Leader For T%v->T%v", rf.role, rf.currentTerm, rf.currentTerm)
 	rf.role = Leader
+
+	rf.nextIndex = make([]int, len(rf.peers))
+	rf.matchIndex = make([]int, len(rf.peers))
+	for i := range rf.peers {
+		rf.nextIndex[i] = rf.getLastIndex() + 1
+		rf.matchIndex[i] = 0
+	}
 }
 
 func (rf *Raft) contextLostLocked(role Role, term int) bool {
 	return !(rf.role == role && rf.currentTerm == term)
+}
+
+type LogEntry struct {
+	LogIndex int
+	LogTerm  int
+	Cmd      interface{}
+}
+
+func (rf *Raft) getLastIndex() int {
+	return rf.log[len(rf.log)-1].LogIndex
+}
+
+func (rf *Raft) getLastTerm() int {
+	return rf.log[len(rf.log)-1].LogTerm
 }
 
 // A Go object implementing a single Raft peer.
@@ -127,9 +148,19 @@ type Raft struct {
 	role        Role
 	currentTerm int
 	votedFor    int // -1 means vote for none
+	log         []LogEntry
+	applyCh     chan ApplyMsg
 
 	electionStart   time.Time
 	electionTimeout time.Duration // random
+
+	// todo Volatile state 什么意思
+	commitIndex int
+	lastApplied int
+
+	// leader
+	nextIndex  []int
+	matchIndex []int
 }
 
 // return currentTerm and whether this server
@@ -193,14 +224,15 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 // field names must start with capital letters!
 type RequestVoteArgs struct {
 	// Your data here (PartA, PartB).
-	Term        int
-	CandidateId int
+	Term         int
+	CandidateId  int
+	LastLogIndex int
+	LastLogTerm  int
 }
 
 // example RequestVote RPC reply structure.
 // field names must start with capital letters!
 type RequestVoteReply struct {
-	// Your data here (PartA).
 	Term        int
 	VoteGranted bool // 已投票
 }
@@ -221,28 +253,52 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		// 投票
 		rf.becomeFollowerLocked(args.Term)
 	}
-	if rf.votedFor != -1 {
+	if args.LastLogTerm < rf.getLastTerm() ||
+		(args.LastLogTerm == rf.getLastTerm() &&
+			args.LastLogIndex < rf.getLastIndex()) {
 		reply.VoteGranted = false
+		LOG(rf.me, rf.currentTerm, DError, "candidate's log < receiver's log")
+
+		return
+	} else if rf.votedFor != -1 {
+		reply.VoteGranted = false
+		LOG(rf.me, rf.currentTerm, DError, "There are already voters available: %v", rf.votedFor)
 		return
 	}
-	if rf.votedFor == -1 {
-		reply.VoteGranted = true
-		rf.votedFor = args.CandidateId
-		rf.resetElectionTimerLocked()
-		LOG(rf.me, rf.currentTerm, DVote, "-> S%d, vote granted", args.CandidateId)
-
-		// todo 比较日志
+	if args.LastLogIndex > rf.getLastIndex() {
 
 	}
+	reply.VoteGranted = true
+	rf.votedFor = args.CandidateId
+	// todo 比较日志
+	// candidate's log is at least as up-to-date as receiver's log, grant vote
+	//if rf.log[1] > reply.Term {
+	//
+	//}
+	rf.resetElectionTimerLocked()
+	LOG(rf.me, rf.currentTerm, DVote, "-> S%d, vote granted", args.CandidateId)
+
 }
 
 type AppendEntriesArgs struct {
-	Term     int
-	LeaderId int
+	Term         int
+	LeaderId     int
+	PreLogIndex  int
+	PreLogTerm   int
+	Entries      []LogEntry
+	LeaderCommit int
 }
 type AppendEntriesReply struct {
-	Term    int
-	Success bool
+	Term      int
+	Success   bool
+	NextIndex int
+}
+
+func min(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
 }
 
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
@@ -250,6 +306,38 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	defer rf.mu.Unlock()
 
 	reply.Term = rf.currentTerm
+	if args.Term < rf.currentTerm {
+		reply.Success = false
+		return
+	}
+
+	// todo ????
+	if args.PreLogIndex > rf.getLastIndex() {
+		reply.NextIndex = rf.getLastIndex() + 1
+		return
+	}
+
+	// todo ????
+	term := rf.log[args.PreLogIndex].LogTerm
+	if args.PreLogTerm != term {
+		for i := args.PreLogIndex - 1; i >= 0; i-- {
+			if rf.log[i].LogTerm != term {
+				reply.NextIndex = i + 1
+				break
+			}
+		}
+		return
+	}
+	// todo ?? 什么意思
+	rf.log = rf.log[:args.PreLogIndex+1]
+	rf.log = append(rf.log, args.Entries...)
+	reply.NextIndex = rf.getLastIndex() + 1
+
+	// commit log
+	if args.LeaderCommit > rf.commitIndex {
+		rf.commitIndex = min(args.LeaderCommit, rf.getLastIndex())
+		//rf.chanCommit <- true
+	}
 
 	if args.Term > rf.currentTerm {
 		rf.becomeFollowerLocked(args.Term)
@@ -257,10 +345,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		// 重置选举计时器
 		rf.resetElectionTimerLocked()
 	}
-	if args.Term < rf.currentTerm {
-		reply.Success = false
-		return
-	}
+
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -297,6 +382,31 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	//DPrintf("%d send append entities to %d :%s",rf.me,server,reply)
+
+	// todo 这块为啥要这样写？？
+	if ok {
+		// if rf is not the leader or outofdate, return
+		if rf.role != Leader || args.Term != rf.currentTerm {
+			return ok
+		}
+
+		// if higher term is found, set follower and return
+		if rf.currentTerm < reply.Term {
+			rf.becomeFollowerLocked(reply.Term)
+			return ok
+		}
+
+		// set the next index of follower
+		rf.nextIndex[server] = reply.NextIndex
+		// if append entries successfully, set match index of follower
+		if reply.Success {
+			rf.matchIndex[server] = rf.nextIndex[server] - 1
+		}
+	}
 	return ok
 }
 
@@ -313,11 +423,24 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 // term. the third return value is true if this server believes it is
 // the leader.
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
-	index := -1
-	term := -1
-	isLeader := true
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	term, isLeader := rf.GetState()
 
-	// Your code here (PartB).
+	if rf.role != Leader {
+		return -1, term, isLeader
+	}
+	// todo Your code here (PartB).
+	rf.log = append(rf.log, LogEntry{
+		LogTerm:  rf.currentTerm,
+		LogIndex: len(rf.log),
+		Cmd:      command,
+	})
+	index := rf.getLastIndex()
+	// start the agreement and return immediately
+	rf.startReplication(term)
+	// AppendEntries RPC 2 follower
+	// 将所有已提交日志按顺序发送到 applyCh
 
 	return index, term, isLeader
 }
@@ -358,7 +481,14 @@ func (rf *Raft) startReplication(term int) bool {
 		args := &AppendEntriesArgs{
 			Term:     rf.currentTerm,
 			LeaderId: rf.me,
+			// todo 这些值应该填什么？
+			PreLogIndex:  rf.nextIndex[peer] - 1,
+			PreLogTerm:   rf.log[rf.nextIndex[peer]-1].LogTerm,
+			LeaderCommit: rf.commitIndex,
 		}
+		args.Entries = make([]LogEntry, len(rf.log[rf.nextIndex[peer]:]))
+		copy(args.Entries, rf.log[rf.nextIndex[peer]:])
+
 		go replicateToPeer(peer, args)
 	}
 	return true
@@ -435,8 +565,10 @@ func (rf *Raft) startElection(term int) bool {
 		}
 
 		args := &RequestVoteArgs{
-			Term:        rf.currentTerm,
-			CandidateId: rf.me,
+			Term:         rf.currentTerm,
+			CandidateId:  rf.me,
+			LastLogIndex: rf.getLastIndex(),
+			LastLogTerm:  rf.getLastTerm(),
 		}
 
 		go askVoteFromPeer(peer, args)
@@ -484,6 +616,18 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.role = Follower
 	rf.currentTerm = 0
 	rf.votedFor = -1
+
+	rf.log = append(rf.log, LogEntry{LogTerm: 0})
+	rf.mu.Lock()
+	for i := rf.lastApplied + 1; i <= rf.commitIndex; i++ {
+		applyCh <- ApplyMsg{CommandIndex: i, Command: rf.log[i].Cmd}
+		//DPrintf("%d apply index %d: %d", rf.me, i, rf.log[i])
+		rf.lastApplied = i
+	}
+	rf.applyCh = applyCh
+	rf.mu.Unlock()
+
+	//rf.log = applyCh
 
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
