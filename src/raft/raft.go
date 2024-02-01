@@ -28,9 +28,12 @@ import (
 	"course/labrpc"
 )
 
+// todo 这些值是怎么确定的？
 const (
 	electionTimeoutMin time.Duration = 250 * time.Millisecond
 	electionTimeoutMax time.Duration = 400 * time.Millisecond
+
+	replicateInterval = 250 * time.Millisecond
 )
 
 func (rf *Raft) resetElectionTimerLocked() {
@@ -106,6 +109,10 @@ func (rf *Raft) becomeLeaderLocked() {
 	rf.role = Leader
 }
 
+func (rf *Raft) contextLostLocked(role Role, term int) bool {
+	return !(rf.role == role && rf.currentTerm == term)
+}
+
 // A Go object implementing a single Raft peer.
 type Raft struct {
 	mu        sync.Mutex          // Lock to protect shared access to this peer's state
@@ -131,9 +138,8 @@ func (rf *Raft) GetState() (int, bool) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	term := rf.currentTerm
-	isleader := rf.role == Leader
-	// Your code here (PartA).
-	return term, isleader
+	isLeader := rf.role == Leader
+	return term, isLeader
 }
 
 // save Raft's persistent state to stable storage,
@@ -205,7 +211,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
-	// align
 	reply.Term = rf.currentTerm
 
 	if args.Term < rf.currentTerm {
@@ -216,7 +221,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		// 投票
 		rf.becomeFollowerLocked(args.Term)
 	}
-	// todo 这个顺序为啥会不能放在后面？？因为votedFor改变了
 	if rf.votedFor != -1 {
 		reply.VoteGranted = false
 		return
@@ -228,6 +232,34 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		LOG(rf.me, rf.currentTerm, DVote, "-> S%d, vote granted", args.CandidateId)
 
 		// todo 比较日志
+
+	}
+}
+
+type AppendEntriesArgs struct {
+	Term     int
+	LeaderId int
+}
+type AppendEntriesReply struct {
+	Term    int
+	Success bool
+}
+
+func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
+	reply.Term = rf.currentTerm
+
+	if args.Term > rf.currentTerm {
+		rf.becomeFollowerLocked(args.Term)
+		reply.Success = true
+		// 重置选举计时器
+		rf.resetElectionTimerLocked()
+	}
+	if args.Term < rf.currentTerm {
+		reply.Success = false
+		return
 	}
 }
 
@@ -260,6 +292,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+	return ok
+}
+
+func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
+	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	return ok
 }
 
@@ -304,30 +341,68 @@ func (rf *Raft) killed() bool {
 	return z == 1
 }
 
+func (rf *Raft) startReplication(term int) bool {
+	replicateToPeer := func(peer int, args *AppendEntriesArgs) {
+		reply := &AppendEntriesReply{}
+		rf.sendAppendEntries(peer, args, reply)
+		// todo 这块要做什么
+	}
+
+	rf.contextLostLocked(Leader, rf.currentTerm)
+
+	for peer := 0; peer < len(rf.peers); peer++ {
+		if peer == rf.me {
+			continue
+		}
+
+		args := &AppendEntriesArgs{
+			Term:     rf.currentTerm,
+			LeaderId: rf.me,
+		}
+		go replicateToPeer(peer, args)
+	}
+	return true
+}
+
+func (rf *Raft) replicationTicker(term int) {
+	// todo ???
+	//rf.mu.Lock()
+	//defer rf.mu.Unlock()
+
+	for !rf.killed() {
+		// todo ???
+		ok := rf.startReplication(term)
+		if !ok {
+			return
+		}
+		time.Sleep(replicateInterval)
+	}
+
+}
+
 func (rf *Raft) startElection(term int) bool {
 	votes := 0
-	askVoteFromPeer := func(peer int, args *RequestVoteArgs) {
+	askVoteFromPeer := func(peer int, args *RequestVoteArgs) bool {
 		reply := &RequestVoteReply{}
-		// todo 这里不用 lock 吗？？？？why？？
-		// 因为这里不是共享的信息
 		ok := rf.sendRequestVote(peer, args, reply)
 
 		rf.mu.Lock()
 		defer rf.mu.Unlock()
 		if !ok {
 			LOG(rf.me, rf.currentTerm, DDebug, "Ask vote from %d, Lost or error", peer)
-			return
+			return false
 		}
 
 		if reply.Term > rf.currentTerm {
 			// become follower
 			rf.becomeFollowerLocked(reply.Term)
-			return
+			return false
 		}
 
 		// todo 为什么要 check context
-		if !(rf.role == Candidate && rf.currentTerm == term) {
-			return
+		if rf.contextLostLocked(Candidate, rf.currentTerm) {
+			LOG(rf.me, rf.currentTerm, DVote, "Lost Candidate to %s, abort RequestVote", rf.role)
+			return false
 		}
 
 		// 计算投给自己的票数
@@ -338,36 +413,35 @@ func (rf *Raft) startElection(term int) bool {
 		if votes > len(rf.peers)/2 {
 			if rf.role == Candidate {
 				rf.becomeLeaderLocked()
+				go rf.replicationTicker(term)
 			}
-
 		}
+		return true
 	}
 
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
 	// todo 为什么要判断任期一致
-	if rf.role == Candidate && rf.currentTerm == term {
-
-		// todo locked
-
-		for peer := 0; peer < len(rf.peers); peer++ {
-
-			if peer == rf.me {
-				votes++
-				continue
-			}
-
-			args := &RequestVoteArgs{
-				Term:        rf.currentTerm,
-				CandidateId: rf.me,
-			}
-
-			go askVoteFromPeer(peer, args)
-		}
-		return true
+	if rf.contextLostLocked(Candidate, rf.currentTerm) {
+		LOG(rf.me, rf.currentTerm, DVote, "Lost Candidate to %s, abort RequestVote", rf.role)
+		return false
 	}
-	return false
+
+	for peer := 0; peer < len(rf.peers); peer++ {
+		if peer == rf.me {
+			votes++
+			continue
+		}
+
+		args := &RequestVoteArgs{
+			Term:        rf.currentTerm,
+			CandidateId: rf.me,
+		}
+
+		go askVoteFromPeer(peer, args)
+	}
+	return true
 }
 
 func (rf *Raft) electionTicker() {
