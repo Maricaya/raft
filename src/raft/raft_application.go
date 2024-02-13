@@ -10,7 +10,6 @@ func (rf *Raft) applicationTicker() {
 		for i := rf.lastApplied + 1; i <= rf.commitIndex; i++ {
 			entries = append(entries, rf.log[i])
 		}
-
 		rf.mu.Unlock()
 
 		for i, entry := range entries {

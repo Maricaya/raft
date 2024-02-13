@@ -82,15 +82,14 @@ type Raft struct {
 
 	// only used in Leader
 	// every peer's view
-	nextIndex  []int
-	matchIndex []int
+	nextIndex  []int // 记录每个Follower节点需要发送的下一个日志条目的索引
+	matchIndex []int // 记录每个Follower节点已经复制到的最高日志条目的索引
 
 	// fields for apply loop
-	commitIndex int
-	lastApplied int
-	applyCh     chan ApplyMsg
-	applyCond   *sync.Cond // todo ??
-
+	commitIndex     int           // 已提交的最高日志条目的索引
+	lastApplied     int           // 已经被应用到状态机的最高日志条目的索引
+	applyCh         chan ApplyMsg // 用于接收已经提交的日志条目（entries）。在Raft算法中，一旦日志条目被提交，就会通过applyCh通道发送给应用程序进行应用，以确保所有节点都对状态机执行相同的操作。
+	applyCond       *sync.Cond    // todo ??
 	electionStart   time.Time
 	electionTimeout time.Duration // random
 }
@@ -127,9 +126,11 @@ func (rf *Raft) becomeLeaderLocked() {
 	}
 	LOG(rf.me, rf.currentTerm, DLeader, "Become Leader in T%d", rf.currentTerm)
 	rf.role = Leader
-
+	// Leader节点初始化
 	for peer := 0; peer < len(rf.peers); peer++ {
+		// 记录每个Follower节点需要发送的下一个日志条目的索引
 		rf.nextIndex[peer] = len(rf.log)
+		// 记录每个Follower节点已经复制到的最高日志条目的索引
 		rf.matchIndex[peer] = 0
 	}
 }
@@ -209,6 +210,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	if rf.role != Leader {
 		return 0, 0, false
 	}
+	// add log
 	rf.log = append(rf.log, LogEntry{
 		CommandValid: true,
 		Command:      command,
@@ -272,6 +274,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.matchIndex = make([]int, len(rf.peers))
 
 	// initialize the fields used for apply
+	// todo??
 	rf.applyCh = applyCh
 	rf.applyCond = sync.NewCond(&rf.mu)
 	rf.commitIndex = 0

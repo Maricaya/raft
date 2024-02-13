@@ -15,7 +15,7 @@ func (rf *Raft) isElectionTimeoutLocked() bool {
 	return time.Since(rf.electionStart) > rf.electionTimeout
 }
 
-// check wheather my last log is more up to date than the candidate's last log
+// check whether my last log is more up to date than the candidate's last log
 func (rf *Raft) isMoreUpToDateLocked(candidateIndex, candidateTerm int) bool {
 	l := len(rf.log)
 	lastIndex, lastTerm := l-1, rf.log[l-1].Term
@@ -25,7 +25,7 @@ func (rf *Raft) isMoreUpToDateLocked(candidateIndex, candidateTerm int) bool {
 	if lastTerm != candidateTerm {
 		return lastTerm > candidateTerm
 	}
-	return lastIndex > candidateTerm
+	return lastIndex > candidateIndex
 }
 
 // example RequestVote RPC arguments structure.
@@ -79,7 +79,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 
-	// check if candidate's last log is more up to date
+	// todo check if candidate's last log is more up to date
 	if rf.isMoreUpToDateLocked(args.LastLogIndex, args.LastLogTerm) {
 		LOG(rf.me, rf.currentTerm, DVote, "-> S%d, Reject voted, Candidate less up-to-date", args.CandidateId)
 		return
@@ -87,9 +87,9 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 
 	reply.VoteGranted = true
 	rf.votedFor = args.CandidateId
-	rf.resetElectionTimerLocked()
 	LOG(rf.me, rf.currentTerm, DVote, "-> S%d, Vote granted", args.CandidateId)
-	// todo 比较日志
+
+	rf.resetElectionTimerLocked()
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -175,6 +175,7 @@ func (rf *Raft) startElection(term int) {
 	l := len(rf.log)
 	for peer := 0; peer < len(rf.peers); peer++ {
 		if peer == rf.me {
+			LOG(rf.me, rf.currentTerm, DVote, "-> S%d, Vote for myself", rf.me)
 			votes++ // 投票了
 			continue
 		}
