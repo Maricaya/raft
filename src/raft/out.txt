@@ -1,249 +1,121 @@
 Test (PartB): basic agreement ...
-000006 T0000 VOTE S1 Follower->Candidate, For T1
-000007 T0000 VOTE S2 Follower->Candidate, For T1
-000008 T0000 VOTE S0 Follower->Candidate, For T1
-000011 T0001 VOTE S2 -> S1, Reject, Already voted to S2
-000011 T0001 VOTE S1 -> S2, Reject, Already voted to S1
-000011 T0001 VOTE S1 -> S0, Reject, Already voted to S1
-000011 T0001 VOTE S2 -> S0, Reject, Already voted to S2
-000012 T0001 VOTE S0 -> S2, Reject, Already voted to S0
-000012 T0001 VOTE S0 -> S1, Reject, Already voted to S0
-000751 T0001 VOTE S0 Candidate->Candidate, For T2
-000753 T0001 LOG1 S1 Candidate->Follower, For T1->T2
-000753 T0002 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-000754 T0002 VOTE S1 -> S0, vote granted
-000756 T0002 LEAD S0 Candidate->Leader, For T2
-000758 T0001 LOG1 S2 Candidate->Follower, For T1->T2
-000758 T0002 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-000758 T0002 VOTE S2 -> S0, vote granted
-000759 T0002 VOTE S0 Lost context, abort RequestVoteReply for S2
-004954 T0002 VOTE S1 Follower->Candidate, For T3
-004955 T0002 LOG1 S2 Follower->Follower, For T2->T3
-004955 T0003 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-004955 T0003 VOTE S2 -> S1, vote granted
-004956 T0003 LEAD S1 Candidate->Leader, For T3
-004956 T0002 LOG1 S0 Leader->Follower, For T2->T3
-004956 T0003 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-004956 T0003 VOTE S0 -> S1, vote granted
-004957 T0003 VOTE S1 Lost context, abort RequestVoteReply for S0
-008374 T0003 VOTE S2 Follower->Candidate, For T4
-008375 T0003 LOG1 S0 Follower->Follower, For T3->T4
-008375 T0004 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-008375 T0004 VOTE S0 -> S2, vote granted
-008376 T0004 LEAD S2 Candidate->Leader, For T4
-008376 T0003 LOG1 S1 Leader->Follower, For T3->T4
-008376 T0004 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-008376 T0004 VOTE S1 -> S2, vote granted
-008376 T0004 VOTE S2 Lost context, abort RequestVoteReply for S1
-013043 T0004 VOTE S0 Follower->Candidate, For T5
-013045 T0004 LOG1 S1 Follower->Follower, For T4->T5
-013045 T0005 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-013045 T0005 VOTE S1 -> S0, vote granted
-013046 T0004 LOG1 S2 Leader->Follower, For T4->T5
-013046 T0005 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-013046 T0005 VOTE S2 -> S0, vote granted
-013046 T0005 LEAD S0 Candidate->Leader, For T5
-013046 T0005 VOTE S0 Lost context, abort RequestVoteReply for S1
-017582 T0005 VOTE S1 Follower->Candidate, For T6
-017588 T0005 LOG1 S0 Leader->Follower, For T5->T6
-017588 T0006 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-017588 T0006 VOTE S0 -> S1, vote granted
-017589 T0006 LEAD S1 Candidate->Leader, For T6
-017591 T0005 LOG1 S2 Follower->Follower, For T5->T6
-017591 T0006 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-017591 T0006 VOTE S2 -> S1, vote granted
-017592 T0006 VOTE S1 Lost context, abort RequestVoteReply for S2
-020931 T0006 VOTE S0 Follower->Candidate, For T7
-020933 T0006 LOG1 S2 Follower->Follower, For T6->T7
-020933 T0007 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-020933 T0007 VOTE S2 -> S0, vote granted
-020933 T0006 LOG1 S1 Leader->Follower, For T6->T7
-020933 T0007 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-020933 T0007 VOTE S1 -> S0, vote granted
-020933 T0007 LEAD S0 Candidate->Leader, For T7
-020934 T0007 VOTE S0 Lost context, abort RequestVoteReply for S2
-024651 T0007 VOTE S2 Follower->Candidate, For T8
-024655 T0007 LOG1 S0 Leader->Follower, For T7->T8
-024655 T0008 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-024655 T0008 VOTE S0 -> S2, vote granted
-024657 T0007 LOG1 S1 Follower->Follower, For T7->T8
-024658 T0008 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-024660 T0008 VOTE S1 -> S2, vote granted
-024660 T0008 LEAD S2 Candidate->Leader, For T8
-024661 T0008 VOTE S2 Lost context, abort RequestVoteReply for S1
-027407 T0008 VOTE S0 Follower->Candidate, For T9
-027409 T0008 LOG1 S2 Leader->Follower, For T8->T9
-027409 T0009 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-027409 T0009 VOTE S2 -> S0, vote granted
-027410 T0008 LOG1 S1 Follower->Follower, For T8->T9
-027410 T0009 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-027410 T0009 VOTE S1 -> S0, vote granted
-027411 T0009 LEAD S0 Candidate->Leader, For T9
-027412 T0009 VOTE S0 Lost context, abort RequestVoteReply for S2
-031299 T0009 VOTE S1 Follower->Candidate, For T10
-031308 T0009 LOG1 S2 Follower->Follower, For T9->T10
-031308 T0010 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-031308 T0010 VOTE S2 -> S1, vote granted
-031317 T0010 LEAD S1 Candidate->Leader, For T10
-031330 T0009 LOG1 S0 Leader->Follower, For T9->T10
-031331 T0010 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-031350 T0010 VOTE S0 -> S1, vote granted
-031351 T0010 VOTE S1 Lost context, abort RequestVoteReply for S0
-035227 T0010 VOTE S2 Follower->Candidate, For T11
-035229 T0010 LOG1 S0 Follower->Follower, For T10->T11
-035229 T0011 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-035229 T0011 VOTE S0 -> S2, vote granted
-035229 T0010 LOG1 S1 Leader->Follower, For T10->T11
-035229 T0011 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-035229 T0011 VOTE S1 -> S2, vote granted
-035229 T0011 LEAD S2 Candidate->Leader, For T11
-035229 T0011 VOTE S2 Lost context, abort RequestVoteReply for S1
-038959 T0011 VOTE S0 Follower->Candidate, For T12
-038960 T0011 LOG1 S1 Follower->Follower, For T11->T12
-038960 T0012 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-038960 T0012 VOTE S1 -> S0, vote granted
-038960 T0011 LOG1 S2 Leader->Follower, For T11->T12
-038960 T0012 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-038960 T0012 VOTE S2 -> S0, vote granted
-038960 T0012 LEAD S0 Candidate->Leader, For T12
-038961 T0012 VOTE S0 Lost context, abort RequestVoteReply for S1
-043616 T0012 VOTE S1 Follower->Candidate, For T13
-043622 T0012 LOG1 S2 Follower->Follower, For T12->T13
-043622 T0013 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-043622 T0013 VOTE S2 -> S1, vote granted
-043622 T0013 LEAD S1 Candidate->Leader, For T13
-043623 T0012 LOG1 S0 Leader->Follower, For T12->T13
-043623 T0013 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-043623 T0013 VOTE S0 -> S1, vote granted
-043623 T0013 VOTE S1 Lost context, abort RequestVoteReply for S0
-048611 T0013 VOTE S2 Follower->Candidate, For T14
-048614 T0013 LOG1 S1 Leader->Follower, For T13->T14
-048614 T0014 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-048614 T0014 VOTE S1 -> S2, vote granted
-048617 T0014 LEAD S2 Candidate->Leader, For T14
-048618 T0013 LOG1 S0 Follower->Follower, For T13->T14
-048618 T0014 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-048618 T0014 VOTE S0 -> S2, vote granted
-048619 T0014 VOTE S2 Lost context, abort RequestVoteReply for S0
-052962 T0014 VOTE S1 Follower->Candidate, For T15
-052964 T0014 LOG1 S2 Leader->Follower, For T14->T15
-052964 T0015 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-052964 T0015 VOTE S2 -> S1, vote granted
-052969 T0015 LEAD S1 Candidate->Leader, For T15
-052972 T0014 LOG1 S0 Follower->Follower, For T14->T15
-052972 T0015 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-052972 T0015 VOTE S0 -> S1, vote granted
-052973 T0015 VOTE S1 Lost context, abort RequestVoteReply for S0
-056219 T0015 VOTE S2 Follower->Candidate, For T16
-056222 T0015 LOG1 S1 Leader->Follower, For T15->T16
-056222 T0016 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-056222 T0016 VOTE S1 -> S2, vote granted
-056223 T0016 LEAD S2 Candidate->Leader, For T16
-056224 T0015 LOG1 S0 Follower->Follower, For T15->T16
-056224 T0016 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-056224 T0016 VOTE S0 -> S2, vote granted
-056225 T0016 VOTE S2 Lost context, abort RequestVoteReply for S0
-060157 T0016 VOTE S1 Follower->Candidate, For T17
-060163 T0016 LOG1 S0 Follower->Follower, For T16->T17
-060163 T0017 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-060163 T0017 VOTE S0 -> S1, vote granted
-060163 T0016 LOG1 S2 Leader->Follower, For T16->T17
-060163 T0017 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-060164 T0017 VOTE S2 -> S1, vote granted
-060164 T0017 LEAD S1 Candidate->Leader, For T17
-060164 T0017 VOTE S1 Lost context, abort RequestVoteReply for S2
-063956 T0017 VOTE S0 Follower->Candidate, For T18
-063962 T0017 LOG1 S2 Follower->Follower, For T17->T18
-063962 T0018 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-063962 T0018 VOTE S2 -> S0, vote granted
-063963 T0018 LEAD S0 Candidate->Leader, For T18
-063964 T0017 LOG1 S1 Leader->Follower, For T17->T18
-063964 T0018 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-063964 T0018 VOTE S1 -> S0, vote granted
-063964 T0018 VOTE S0 Lost context, abort RequestVoteReply for S1
-067390 T0018 VOTE S2 Follower->Candidate, For T19
-067393 T0018 LOG1 S1 Follower->Follower, For T18->T19
-067393 T0019 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-067393 T0019 VOTE S1 -> S2, vote granted
-067395 T0019 LEAD S2 Candidate->Leader, For T19
-067395 T0018 LOG1 S0 Leader->Follower, For T18->T19
-067395 T0019 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-067395 T0019 VOTE S0 -> S2, vote granted
-067397 T0019 VOTE S2 Lost context, abort RequestVoteReply for S0
-070944 T0019 VOTE S1 Follower->Candidate, For T20
-070956 T0019 LOG1 S2 Leader->Follower, For T19->T20
-070956 T0020 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-070956 T0020 VOTE S2 -> S1, vote granted
-070956 T0019 LOG1 S0 Follower->Follower, For T19->T20
-070956 T0020 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-070956 T0020 VOTE S0 -> S1, vote granted
-070956 T0020 LEAD S1 Candidate->Leader, For T20
-070957 T0020 VOTE S1 Lost context, abort RequestVoteReply for S0
-075179 T0020 VOTE S0 Follower->Candidate, For T21
-075183 T0020 LOG1 S2 Follower->Follower, For T20->T21
-075183 T0021 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-075183 T0021 VOTE S2 -> S0, vote granted
-075184 T0021 LEAD S0 Candidate->Leader, For T21
-075184 T0020 LOG1 S1 Leader->Follower, For T20->T21
-075184 T0021 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-075184 T0021 VOTE S1 -> S0, vote granted
-075185 T0021 VOTE S0 Lost context, abort RequestVoteReply for S1
-078681 T0021 VOTE S2 Follower->Candidate, For T22
-078683 T0021 LOG1 S1 Follower->Follower, For T21->T22
-078683 T0022 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-078683 T0022 VOTE S1 -> S2, vote granted
-078685 T0022 LEAD S2 Candidate->Leader, For T22
-078686 T0021 LOG1 S0 Leader->Follower, For T21->T22
-078686 T0022 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-078686 T0022 VOTE S0 -> S2, vote granted
-078686 T0022 VOTE S2 Lost context, abort RequestVoteReply for S0
-082353 T0022 VOTE S0 Follower->Candidate, For T23
-082358 T0022 LOG1 S2 Leader->Follower, For T22->T23
-082358 T0023 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-082358 T0023 VOTE S2 -> S0, vote granted
-082359 T0022 LOG1 S1 Follower->Follower, For T22->T23
-082359 T0023 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-082360 T0023 VOTE S1 -> S0, vote granted
-082360 T0023 LEAD S0 Candidate->Leader, For T23
-082360 T0023 VOTE S0 Lost context, abort RequestVoteReply for S1
-086442 T0023 VOTE S2 Follower->Candidate, For T24
-086445 T0023 LOG1 S1 Follower->Follower, For T23->T24
-086445 T0024 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-086445 T0024 VOTE S1 -> S2, vote granted
-086446 T0024 LEAD S2 Candidate->Leader, For T24
-086445 T0023 LOG1 S0 Leader->Follower, For T23->T24
-086446 T0024 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-086446 T0024 VOTE S0 -> S2, vote granted
-086446 T0024 VOTE S2 Lost context, abort RequestVoteReply for S0
-089578 T0024 VOTE S1 Follower->Candidate, For T25
-089581 T0024 LOG1 S2 Leader->Follower, For T24->T25
-089581 T0025 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-089581 T0025 VOTE S2 -> S1, vote granted
-089581 T0025 LEAD S1 Candidate->Leader, For T25
-089583 T0024 LOG1 S0 Follower->Follower, For T24->T25
-089583 T0025 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-089583 T0025 VOTE S0 -> S1, vote granted
-089583 T0025 VOTE S1 Lost context, abort RequestVoteReply for S0
-094292 T0025 VOTE S0 Follower->Candidate, For T26
-094294 T0025 LOG1 S2 Follower->Follower, For T25->T26
-094295 T0026 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
-094295 T0026 VOTE S2 -> S0, vote granted
-094294 T0025 LOG1 S1 Leader->Follower, For T25->T26
-094295 T0026 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-094296 T0026 VOTE S1 -> S0, vote granted
-094296 T0026 LEAD S0 Candidate->Leader, For T26
-094296 T0026 VOTE S0 Lost context, abort RequestVoteReply for S1
-098966 T0026 VOTE S2 Follower->Candidate, For T27
-098968 T0026 LOG1 S1 Follower->Follower, For T26->T27
-098969 T0027 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
-098969 T0027 VOTE S1 -> S2, vote granted
-098971 T0027 LEAD S2 Candidate->Leader, For T27
-098971 T0026 LOG1 S0 Leader->Follower, For T26->T27
-098971 T0027 VOTE S0 Compare last log, Me:[0]T0, Candidate: [0]T0
-098971 T0027 VOTE S0 -> S2, vote granted
-098972 T0027 VOTE S2 Lost context, abort RequestVoteReply for S0
---- FAIL: TestBasicAgreePartB (10.04s)
-    config.go:604: one(100) failed to reach agreement
-FAIL
-exit status 1
-FAIL	course/raft	11.078s
+000009 T0000 VOTE S0 Follower->Candidate, For T1
+000014 T0001 VOTE S0 -> S0, Vote for myself
+000016 T0000 VOTE S2 Follower->Candidate, For T1
+000016 T0001 VOTE S2 -> S2, Vote for myself
+000016 T0000 VOTE S1 Follower->Candidate, For T1
+000017 T0001 VOTE S1 -> S1, Vote for myself
+000021 T0001 VOTE S1 -> S2, Reject, Already voted to S1
+000022 T0001 VOTE S2 -> S0, Reject, Already voted to S2
+000021 T0001 VOTE S0 -> S1, Reject, Already voted to S0
+000022 T0001 VOTE S1 -> S0, Reject, Already voted to S1
+000022 T0001 VOTE S2 -> S1, Reject, Already voted to S2
+000023 T0001 VOTE S0 -> S2, Reject, Already voted to S0
+000559 T0001 VOTE S0 Candidate->Candidate, For T2
+000559 T0002 VOTE S0 -> S0, Vote for myself
+000560 T0001 LOG1 S2 Candidate->Follower, For T1->T2
+000560 T0001 LOG1 S1 Candidate->Follower, For T1->T2
+000560 T0002 VOTE S2 Compare last log, Me:[0]T0, Candidate: [0]T0
+000560 T0002 VOTE S2 -> S0, Vote granted
+000560 T0002 VOTE S1 Compare last log, Me:[0]T0, Candidate: [0]T0
+000560 T0002 VOTE S1 -> S0, Vote granted
+000561 T0002 LEAD S0 Become Leader in T2
+000561 T0002 VOTE S0 -> S2, Lost context, abort RequestVoteReply
+000561 T0002 DBUG S0 -> S1, Send log, Prev=[0]T0, Len()=0
+000561 T0002 DBUG S0 -> S2, Send log, Prev=[0]T0, Len()=0
+000562 T0002 LOG1 S2 Follower->Follower, For T2->T2
+000562 T0002 LOG2 S2 Follower accept logs: (0, 0]
+000562 T0002 LOG1 S1 Follower->Follower, For T2->T2
+000562 T0002 LOG2 S1 Follower accept logs: (0, 0]
+000562 T0002 DBUG S0 Match index after sort: [0 0 0], majority[1]=0
+000563 T0002 DBUG S0 Match index after sort: [0 0 0], majority[1]=0
+001020 T0002 LEAD S0 Leader accept log [1]T2
+001266 T0002 DBUG S0 -> S1, Send log, Prev=[0]T0, Len()=1
+001267 T0002 DBUG S0 -> S2, Send log, Prev=[0]T0, Len()=1
+001268 T0002 LOG1 S1 Follower->Follower, For T2->T2
+001268 T0002 LOG2 S1 Follower accept logs: (0, 1]
+001268 T0002 LOG1 S2 Follower->Follower, For T2->T2
+001268 T0002 LOG2 S2 Follower accept logs: (0, 1]
+001268 T0002 DBUG S0 Match index after sort: [0 1 1], majority[1]=1
+001268 T0002 APLY S0 Leader Update the commit index 0->1
+001268 T0002 DBUG S0 Match index after sort: [1 1 1], majority[1]=1
+{2 true 100}
+{2 true 100}
+001269 T0002 APLY S0 Apply log for [1, 1]
+001975 T0002 DBUG S0 -> S1, Send log, Prev=[1]T2, Len()=0
+001975 T0002 DBUG S0 -> S2, Send log, Prev=[1]T2, Len()=0
+001977 T0002 LOG1 S2 Follower->Follower, For T2->T2
+001977 T0002 LOG2 S2 Follower accept logs: (1, 1]
+001977 T0002 APLY S2 Follower Update the commit index 0->1
+001977 T0002 LOG1 S1 Follower->Follower, For T2->T2
+001977 T0002 LOG2 S1 Follower accept logs: (1, 1]
+001977 T0002 APLY S1 Follower Update the commit index 0->1
+{2 true 100}
+{2 true 100}
+001977 T0002 APLY S2 Apply log for [1, 1]
+{2 true 100}
+{2 true 100}
+001977 T0002 DBUG S0 Match index after sort: [1 1 1], majority[1]=1
+001977 T0002 APLY S1 Apply log for [1, 1]
+001977 T0002 DBUG S0 Match index after sort: [1 1 1], majority[1]=1
+002048 T0002 LEAD S0 Leader accept log [2]T2
+002676 T0002 DBUG S0 -> S1, Send log, Prev=[1]T2, Len()=1
+002676 T0002 DBUG S0 -> S2, Send log, Prev=[1]T2, Len()=1
+002679 T0002 LOG1 S2 Follower->Follower, For T2->T2
+002679 T0002 LOG2 S2 Follower accept logs: (1, 2]
+002679 T0002 LOG1 S1 Follower->Follower, For T2->T2
+002679 T0002 LOG2 S1 Follower accept logs: (1, 2]
+002679 T0002 DBUG S0 Match index after sort: [1 2 2], majority[1]=2
+002679 T0002 APLY S0 Leader Update the commit index 1->2
+{2 true 200}
+{2 true 200}
+002679 T0002 APLY S0 Apply log for [2, 2]
+002680 T0002 DBUG S0 Match index after sort: [2 2 2], majority[1]=2
+003378 T0002 DBUG S0 -> S1, Send log, Prev=[2]T2, Len()=0
+003379 T0002 DBUG S0 -> S2, Send log, Prev=[2]T2, Len()=0
+003381 T0002 LOG1 S1 Follower->Follower, For T2->T2
+003381 T0002 LOG2 S1 Follower accept logs: (2, 2]
+003381 T0002 APLY S1 Follower Update the commit index 1->2
+003381 T0002 LOG1 S2 Follower->Follower, For T2->T2
+003381 T0002 LOG2 S2 Follower accept logs: (2, 2]
+003381 T0002 APLY S2 Follower Update the commit index 1->2
+{2 true 200}
+003382 T0002 DBUG S0 Match index after sort: [2 2 2], majority[1]=2
+003382 T0002 DBUG S0 Match index after sort: [2 2 2], majority[1]=2
+{2 true 200}
+{2 true 200}
+{2 true 200}
+003382 T0002 APLY S2 Apply log for [2, 2]
+003382 T0002 APLY S1 Apply log for [2, 2]
+003501 T0002 LEAD S0 Leader accept log [3]T2
+004089 T0002 DBUG S0 -> S1, Send log, Prev=[2]T2, Len()=1
+004089 T0002 DBUG S0 -> S2, Send log, Prev=[2]T2, Len()=1
+004091 T0002 LOG1 S1 Follower->Follower, For T2->T2
+004091 T0002 LOG2 S1 Follower accept logs: (2, 3]
+004091 T0002 LOG1 S2 Follower->Follower, For T2->T2
+004092 T0002 LOG2 S2 Follower accept logs: (2, 3]
+004092 T0002 DBUG S0 Match index after sort: [2 3 3], majority[1]=3
+004092 T0002 APLY S0 Leader Update the commit index 2->3
+{2 true 300}
+{2 true 300}
+004092 T0002 APLY S0 Apply log for [3, 3]
+004092 T0002 DBUG S0 Match index after sort: [3 3 3], majority[1]=3
+004790 T0002 DBUG S0 -> S1, Send log, Prev=[3]T2, Len()=0
+004790 T0002 DBUG S0 -> S2, Send log, Prev=[3]T2, Len()=0
+004792 T0002 LOG1 S1 Follower->Follower, For T2->T2
+004792 T0002 LOG2 S1 Follower accept logs: (3, 3]
+004792 T0002 APLY S1 Follower Update the commit index 2->3
+004792 T0002 LOG1 S2 Follower->Follower, For T2->T2
+004792 T0002 LOG2 S2 Follower accept logs: (3, 3]
+004792 T0002 APLY S2 Follower Update the commit index 2->3
+004793 T0002 DBUG S0 Match index after sort: [3 3 3], majority[1]=3
+{2 true 300}
+004793 T0002 DBUG S0 Match index after sort: [3 3 3], majority[1]=3
+{2 true 300}
+{2 true 300}
+{2 true 300}
+004793 T0002 APLY S1 Apply log for [3, 3]
+004793 T0002 APLY S2 Apply log for [3, 3]
+  ... Passed --   0.5  3   22    5296    3
+PASS
+ok  	course/raft	0.981s

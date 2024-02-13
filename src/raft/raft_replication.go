@@ -47,13 +47,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.becomeFollowerLocked(args.Term)
 	}
 
-	// return failure if prevLog not matched
+	// todo ?? return failure if prevLog not matched
 	if args.PrevLogIndex >= len(rf.log) {
 		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Follower log too short, Len: %d < Prev: %d", args.LeaderId, len(rf.log), args.PrevLogIndex)
 		return
 	}
 	// 后面要使用 PrevLogIndex，先判断，防止越界
-
 	if rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
 		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Prev log not match, [%d]: T%d != T%d", args.LeaderId, args.PrevLogIndex, rf.log[args.PrevLogIndex].Term, args.PrevLogTerm)
 		return
@@ -61,8 +60,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	// append the leader log entries to local
 	rf.log = append(rf.log[:args.PrevLogIndex+1], args.Entries...)
-	reply.Success = true
 	LOG(rf.me, rf.currentTerm, DLog2, "Follower accept logs: (%d, %d]", args.PrevLogIndex, args.PrevLogIndex+len(args.Entries))
+	reply.Success = true
 
 	// TODO: handle LeaderCommit
 	if args.LeaderCommit > rf.commitIndex {
@@ -83,7 +82,9 @@ func (rf *Raft) getMajorityIndexLocked() int {
 	tmpIndexes := make([]int, len(rf.matchIndex))
 	copy(tmpIndexes, rf.matchIndex)
 	// todo check
+	// 升序排序
 	sort.Ints(sort.IntSlice(tmpIndexes))
+	// 计算出大多数节点的索引位置。Raft 协议中，大多数节点的定义是超过半数的节点，因此这里使用 (len(rf.peers) - 1) / 2 来确定大多数的位置。
 	majorityIdx := (len(rf.peers) - 1) / 2
 	LOG(rf.me, rf.currentTerm, DDebug, "Match index after sort: %v, majority[%d]=%d", tmpIndexes, majorityIdx, tmpIndexes[majorityIdx])
 	return tmpIndexes[majorityIdx]
@@ -117,9 +118,12 @@ func (rf *Raft) startReplication(term int) bool {
 
 		// handle the reply
 		// probe the lower index if the prevLog not matched
+		// 最新的日志不match，尝试上一条log
 		if !reply.Success {
 			// go back a term
-			idx, term := args.PrevLogIndex, args.PrevLogTerm
+			idx := rf.nextIndex[peer] - 1
+			term := rf.log[idx].Term
+			//idx, term := args.PrevLogIndex, args.PrevLogTerm
 			for idx > 0 && rf.log[idx].Term == term {
 				idx--
 			}
@@ -151,11 +155,13 @@ func (rf *Raft) startReplication(term int) bool {
 
 	for peer := 0; peer < len(rf.peers); peer++ {
 		if peer == rf.me {
+			// Don't forget to update Leader's matchIndex
 			rf.matchIndex[peer] = len(rf.log) - 1
 			rf.nextIndex[peer] = len(rf.log)
 			continue
 		}
 
+		// 要发送的条目的上一个条目，探针
 		prevIdx := rf.nextIndex[peer] - 1
 		prevTerm := rf.log[prevIdx].Term
 		args := &AppendEntriesArgs{
@@ -166,6 +172,7 @@ func (rf *Raft) startReplication(term int) bool {
 			Entries:      rf.log[prevIdx+1:],
 			LeaderCommit: rf.commitIndex,
 		}
+		LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Send log, Prev=[%d]T%d, Len()=%d", peer, args.PrevLogIndex, args.PrevLogTerm, len(args.Entries))
 		go replicateToPeer(peer, args)
 	}
 
