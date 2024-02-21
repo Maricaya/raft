@@ -15,7 +15,8 @@ View detailed logs
 ```bash
 VERBOSE=0 go test -run PartA | tee out.txt
 VERBOSE=0 go test -run TestBasicAgreePartB | tee out.txt
+VERBOSE=0 go test -run TestFigure8PartC | tee out.txt
 
 
-../tools/dslogs -c 3 out.txt
+../tools/dslogs -c 5 out.txt
 ```

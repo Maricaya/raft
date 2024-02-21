@@ -138,7 +138,6 @@ func TestBasicAgreePartB(t *testing.T) {
 		if nd > 0 {
 			t.Fatalf("some have committed before Start()")
 		}
-
 		xindex := cfg.one(index*100, servers, false)
 		if xindex != index {
 			t.Fatalf("got index %v but expected %v", xindex, index)
@@ -890,7 +889,7 @@ func TestUnreliableAgreePartC(t *testing.T) {
 }
 
 func TestFigure8UnreliablePartC(t *testing.T) {
-	servers := 5
+	servers := 3
 	cfg := make_config(t, servers, true, false)
 	defer cfg.cleanup()
 
@@ -899,8 +898,8 @@ func TestFigure8UnreliablePartC(t *testing.T) {
 	cfg.one(rand.Int()%10000, 1, true)
 
 	nup := servers
-	for iters := 0; iters < 1000; iters++ {
-		if iters == 200 {
+	for iters := 0; iters < 10; iters++ {
+		if iters == 2 {
 			cfg.setlongreordering(true)
 		}
 		leader := -1

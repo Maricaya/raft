@@ -1,6 +1,7 @@
 package raft
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -39,12 +40,20 @@ type RequestVoteArgs struct {
 	LastLogTerm  int
 }
 
+func (args *RequestVoteArgs) String() string {
+	return fmt.Sprintf("Candidate-%d T%d, Last:[%d]T%d", args.CandidateId, args.Term, args.LastLogIndex, args.LastLogTerm)
+}
+
 // example RequestVote RPC reply structure.
 // field names must start with capital letters!
 type RequestVoteReply struct {
 	// Your data here (PartA).
 	Term        int
 	VoteGranted bool // true means candidate received vote
+}
+
+func (reply *RequestVoteReply) String() string {
+	return fmt.Sprintf("T%d, VoteGranted=%v", reply.Term, reply.VoteGranted)
 }
 
 // example RequestVote RPC handler.
@@ -58,6 +67,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (PartA, PartB).
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
+	LOG(rf.me, rf.currentTerm, DDebug, "<- S%d, VoteAsked, Args=%v", args.CandidateId, args.String())
 
 	// align the term
 	reply.Term = rf.currentTerm
@@ -87,6 +97,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 
 	reply.VoteGranted = true
 	rf.votedFor = args.CandidateId
+	rf.persistLocked()
 	LOG(rf.me, rf.currentTerm, DVote, "-> S%d, Vote granted", args.CandidateId)
 
 	rf.resetElectionTimerLocked()
@@ -137,6 +148,7 @@ func (rf *Raft) startElection(term int) {
 			LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Ask vote, Lost or error", peer)
 			return
 		}
+		LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, AskVote Reply=%v", peer, reply.String())
 
 		// align term
 		if reply.Term > rf.currentTerm {
@@ -156,7 +168,6 @@ func (rf *Raft) startElection(term int) {
 			// vote 数量大于一半
 			if votes > len(rf.peers)/2 {
 				rf.becomeLeaderLocked()
-				// todo
 				go rf.replicationTicker(term)
 			}
 		}
@@ -187,6 +198,7 @@ func (rf *Raft) startElection(term int) {
 			LastLogTerm:  rf.log[l-1].Term,
 		}
 
+		LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, AskVote, Args=%v", peer, args.String())
 		go askVoteFromPeer(peer, args)
 	}
 
