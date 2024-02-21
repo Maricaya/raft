@@ -14,7 +14,7 @@ dstest PartA -p 30 -n 100
 View detailed logs
 ```bash
 VERBOSE=0 go test -run PartA | tee out.txt
-VERBOSE=0 go test -run TestBasicAgreePartB | tee out.txt
+VERBOSE=0 go test -run TestRejoinPartB | tee out.txt
 
 
 ../tools/dslogs -c 3 out.txt
