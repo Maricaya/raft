@@ -18,7 +18,6 @@ package raft
 //
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -46,34 +45,6 @@ const (
 	Candidate Role = "Candidate"
 	Leader    Role = "Leader"
 )
-
-func (rf *Raft) firstLogFor(term int) int {
-	for i, entry := range rf.log {
-		if entry.Term == term {
-			return i
-		} else if entry.Term > term {
-			break
-		}
-	}
-	return InvalidIndex
-}
-
-// --- in raft.go
-func (rf *Raft) logString() string {
-	var terms string
-	prevTerm := rf.log[0].Term
-	prevStart := 0
-	for i := 0; i < len(rf.log); i++ {
-		if rf.log[i].Term != prevTerm {
-			terms += fmt.Sprintf(" [%d, %d]T%d;", prevStart, i-1, prevTerm)
-			prevTerm = rf.log[i].Term
-			prevStart = i
-		}
-	}
-	terms += fmt.Sprintf(" [%d, %d]T%d;", prevStart, len(rf.log)-1, prevTerm)
-
-	return terms
-}
 
 // as each Raft peer becomes aware that successive log entries are
 // committed, the peer should send an ApplyMsg to the service (or
@@ -112,8 +83,7 @@ type Raft struct {
 	votedFor    int // -1 means vote for none
 
 	// log in the Peer's local
-	log []LogEntry
-
+	log *RaftLog
 	// only used in Leader
 	// every peer's view
 	nextIndex  []int // 记录每个Follower节点需要发送的下一个日志条目的索引
@@ -123,7 +93,8 @@ type Raft struct {
 	commitIndex     int           // 已提交的最高日志条目的索引
 	lastApplied     int           // 已经被应用到状态机的最高日志条目的索引
 	applyCh         chan ApplyMsg // 用于接收已经提交的日志条目（entries）。在Raft算法中，一旦日志条目被提交，就会通过applyCh通道发送给应用程序进行应用，以确保所有节点都对状态机执行相同的操作。
-	applyCond       *sync.Cond    // todo ??
+	snapPending     bool
+	applyCond       *sync.Cond
 	electionStart   time.Time
 	electionTimeout time.Duration // random
 }
@@ -152,6 +123,7 @@ func (rf *Raft) becomeCandidateLocked() {
 	}
 
 	LOG(rf.me, rf.currentTerm, DVote, "%s->Candidate, For T%d", rf.role, rf.currentTerm+1)
+	rf.resetElectionTimerLocked()
 	rf.currentTerm++
 	rf.role = Candidate
 	rf.votedFor = rf.me
@@ -168,7 +140,7 @@ func (rf *Raft) becomeLeaderLocked() {
 	// Leader节点初始化
 	for peer := 0; peer < len(rf.peers); peer++ {
 		// 记录每个Follower节点需要发送的下一个日志条目的索引
-		rf.nextIndex[peer] = len(rf.log)
+		rf.nextIndex[peer] = rf.log.size()
 		// 记录每个Follower节点已经复制到的最高日志条目的索引
 		rf.matchIndex[peer] = 0
 	}
@@ -181,15 +153,6 @@ func (rf *Raft) GetState() (int, bool) {
 	defer rf.mu.Unlock()
 
 	return rf.currentTerm, rf.role == Leader
-}
-
-// the service says it has created a snapshot that has
-// all info up to and including index. this means the
-// service no longer needs the log through (and including)
-// that index. Raft should now trim its log as much as possible.
-func (rf *Raft) Snapshot(index int, snapshot []byte) {
-	// Your code here (PartD).
-
 }
 
 // the service using Raft (e.g. a k/v server) wants to start
@@ -212,17 +175,17 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		return 0, 0, false
 	}
 	// add log
-	rf.log = append(rf.log, LogEntry{
+	rf.log.append(LogEntry{
 		CommandValid: true,
 		Command:      command,
 		Term:         rf.currentTerm,
 	})
 
 	// Your code here (PartB).
-	LOG(rf.me, rf.currentTerm, DLeader, "Leader accept log [%d]T%d", len(rf.log)-1, rf.currentTerm)
+	LOG(rf.me, rf.currentTerm, DLeader, "Leader accept log [%d]T%d", rf.log.size()-1, rf.currentTerm)
 	rf.persistLocked()
 
-	return len(rf.log) - 1, rf.currentTerm, true
+	return rf.log.size() - 1, rf.currentTerm, true
 }
 
 // the tester doesn't halt goroutines created by Raft after each test,
@@ -270,7 +233,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.votedFor = -1
 
 	// a dummy entry to avoid lots of the corner check
-	rf.log = append(rf.log, LogEntry{Term: InvalidTerm})
+	rf.log = NewLog(InvalidIndex, InvalidTerm, nil, nil)
 
 	// initialize the leader's view slice
 	rf.nextIndex = make([]int, len(rf.peers))
@@ -282,6 +245,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.applyCond = sync.NewCond(&rf.mu)
 	rf.commitIndex = 0
 	rf.lastApplied = 0
+	rf.snapPending = false
 
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())

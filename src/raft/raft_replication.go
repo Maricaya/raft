@@ -79,30 +79,36 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		if !reply.Success {
 			LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Follower Conflict: [%d]T%d", args.LeaderId, reply.ConflictIndex, reply.ConflictTerm)
 
-			LOG(rf.me, rf.currentTerm, DDebug, "<- S%d, Follower log=%v", args.LeaderId, rf.logString())
+			LOG(rf.me, rf.currentTerm, DDebug, "<- S%d, Follower log=%v", args.LeaderId, rf.log.String())
 		}
 	}()
 
 	// return failure if prevLog not matched
-	if args.PrevLogIndex >= len(rf.log) {
-		reply.ConflictIndex = len(rf.log)
+	if args.PrevLogIndex >= rf.log.size() {
+		reply.ConflictIndex = rf.log.size()
 		reply.ConflictTerm = InvalidTerm
 
-		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Follower log too short, Len: %d < Prev: %d", args.LeaderId, len(rf.log), args.PrevLogIndex)
+		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Follower log too short, Len: %d < Prev: %d", args.LeaderId, rf.log.size(), args.PrevLogIndex)
+		return
+	}
+	if args.PrevLogIndex < rf.log.snapLastIdx {
+		reply.ConflictTerm = rf.log.snapLastTerm
+		reply.ConflictIndex = rf.log.snapLastIdx
+		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Follower log truncated in %d", args.LeaderId, rf.log.snapLastIdx)
 		return
 	}
 	// 后面要使用 PrevLogIndex，先判断，防止越界
-	if rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
-		reply.ConflictTerm = rf.log[args.PrevLogIndex].Term
-		reply.ConflictIndex = rf.firstLogFor(reply.ConflictTerm)
+	if rf.log.at(args.PrevLogIndex).Term != args.PrevLogTerm {
+		reply.ConflictTerm = rf.log.at(args.PrevLogIndex).Term
+		reply.ConflictIndex = rf.log.firstLogFor(reply.ConflictTerm)
 
-		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Prev log not match, [%d]: T%d != T%d", args.LeaderId, args.PrevLogIndex, rf.log[args.PrevLogIndex].Term, args.PrevLogTerm)
+		LOG(rf.me, rf.currentTerm, DLog2, "<- S%d, Reject log, Prev log not match, [%d]: T%d != T%d", args.LeaderId, args.PrevLogIndex, rf.log.at(args.PrevLogIndex).Term, args.PrevLogTerm)
 
 		return
 	}
 
 	// append the leader log entries to local
-	rf.log = append(rf.log[:args.PrevLogIndex+1], args.Entries...)
+	rf.log.appendFrom(args.PrevLogIndex, args.Entries)
 	rf.persistLocked()
 
 	LOG(rf.me, rf.currentTerm, DLog2, "Follower accept logs: (%d, %d]", args.PrevLogIndex, args.PrevLogIndex+len(args.Entries))
@@ -112,6 +118,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if args.LeaderCommit > rf.commitIndex {
 		LOG(rf.me, rf.currentTerm, DApply, "Follower Update the commit index %d->%d", rf.commitIndex, args.LeaderCommit)
 		rf.commitIndex = args.LeaderCommit
+		if rf.log.size()-1 < rf.commitIndex {
+			rf.commitIndex = rf.log.size() - 1
+		}
 		rf.applyCond.Signal()
 	}
 }
@@ -167,22 +176,26 @@ func (rf *Raft) startReplication(term int) bool {
 			if reply.ConflictTerm == InvalidTerm {
 				rf.nextIndex[peer] = reply.ConflictIndex
 			} else {
-				firstTermIndex := rf.firstLogFor(reply.ConflictTerm)
-				if firstTermIndex == InvalidTerm {
-					// todo figure 8
-					// fmt.Println("rf.nextIndex[peer]", rf.nextIndex[peer], reply.ConflictIndex)
-					// rf.nextIndex[peer] = reply.ConflictIndex
+				firstIndex := rf.log.firstLogFor(reply.ConflictTerm)
+				if firstIndex == InvalidTerm {
+					rf.nextIndex[peer] = reply.ConflictIndex
 				} else {
-					rf.nextIndex[peer] = firstTermIndex + 1
+					rf.nextIndex[peer] = firstIndex + 1
 				}
 			}
 
 			// avoid the late reply move the nextIndex forward again
 			rf.nextIndex[peer] = min(rf.nextIndex[peer], prevIndex)
 
-			LOG(rf.me, rf.currentTerm, DLog, "-> S%d, Not matched at Prev=[%d]T%d, Try next Prev=[%d]T%d", peer, args.PrevLogIndex, rf.log[args.PrevLogIndex].Term, rf.nextIndex[peer]-1, rf.log[rf.nextIndex[peer]-1].Term)
-
-			LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Leader log=%v", peer, rf.logString())
+			// 用于获取指定节点（peer）上的日志的前一个条目的任期（term
+			nextPrevIndex := rf.nextIndex[peer] - 1
+			nextPrevTerm := InvalidTerm
+			if nextPrevIndex >= rf.log.snapLastIdx {
+				nextPrevTerm = rf.log.at(nextPrevIndex).Term
+			}
+			LOG(rf.me, rf.currentTerm, DLog, "-> S%d, Not matched at Prev=[%d]T%d, Try next Prev=[%d]T%d",
+				peer, args.PrevLogIndex, args.PrevLogTerm, nextPrevIndex, nextPrevTerm)
+			LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Leader log=%v", peer, rf.log.String())
 			return
 		}
 
@@ -192,11 +205,44 @@ func (rf *Raft) startReplication(term int) bool {
 
 		// TODO update the commitIndex
 		majorityMatched := rf.getMajorityIndexLocked()
-		if majorityMatched > rf.commitIndex && rf.log[majorityMatched].Term == rf.currentTerm {
+		if majorityMatched > rf.commitIndex && rf.log.at(majorityMatched).Term == rf.currentTerm {
 			LOG(rf.me, rf.currentTerm, DApply, "Leader Update the commit index %d->%d", rf.commitIndex, majorityMatched)
 			rf.commitIndex = majorityMatched
 			rf.applyCond.Signal()
 		}
+	}
+
+	installOnPeer := func(peer int, term int, args *InstallSnapshotArgs) {
+		reply := &InstallSnapshotReply{}
+		ok := rf.sendInstallSnapshot(peer, args, reply)
+
+		rf.mu.Lock()
+		defer rf.mu.Unlock()
+		if !ok {
+			LOG(rf.me, rf.currentTerm, DSnap, "-> S%d, Lost or crashed", peer)
+			return
+		}
+		LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Append, Reply=%v", peer, reply.String())
+
+		// align the term
+		if reply.Term > rf.currentTerm {
+			rf.becomeFollowerLocked(reply.Term)
+			return
+		}
+
+		if rf.contextLostLocked(Leader, term) {
+			LOG(rf.me, rf.currentTerm, DLog, "-> S%d, Context Lost, T%d:Leader->T%d:%s", peer, term, rf.currentTerm, rf.role)
+			return
+		}
+
+		// update the match and next
+		if args.LastIncludedIndex > rf.matchIndex[peer] { // to avoid disorder reply
+			rf.matchIndex[peer] = args.LastIncludedIndex
+			rf.nextIndex[peer] = args.LastIncludedIndex + 1
+		}
+
+		// note: we need not try to update the commitIndex again,
+		// because the snapshot included indexes are all committed
 	}
 
 	rf.mu.Lock()
@@ -210,20 +256,34 @@ func (rf *Raft) startReplication(term int) bool {
 	for peer := 0; peer < len(rf.peers); peer++ {
 		if peer == rf.me {
 			// Don't forget to update Leader's matchIndex
-			rf.matchIndex[peer] = len(rf.log) - 1
-			rf.nextIndex[peer] = len(rf.log)
+			rf.matchIndex[peer] = rf.log.size() - 1
+			rf.nextIndex[peer] = rf.log.size()
 			continue
 		}
 
 		// 要发送的条目的上一个条目，探针
 		prevIdx := rf.nextIndex[peer] - 1
-		prevTerm := rf.log[prevIdx].Term
+
+		if prevIdx < rf.log.snapLastIdx {
+			args := &InstallSnapshotArgs{
+				Term:              rf.currentTerm,
+				LeaderId:          rf.me,
+				LastIncludedIndex: rf.log.snapLastIdx,
+				LastIncludedTerm:  rf.log.snapLastTerm,
+				Snapshot:          rf.log.snapshot,
+			}
+			LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, SendSnap, Args=%v", peer, args.String())
+			go installOnPeer(peer, term, args)
+			continue
+		}
+
+		prevTerm := rf.log.at(prevIdx).Term
 		args := &AppendEntriesArgs{
 			Term:         rf.currentTerm,
 			LeaderId:     rf.me,
 			PrevLogIndex: prevIdx,
 			PrevLogTerm:  prevTerm,
-			Entries:      rf.log[prevIdx+1:],
+			Entries:      append([]LogEntry(nil), rf.log.tail(prevIdx+1)...),
 			LeaderCommit: rf.commitIndex,
 		}
 		//LOG(rf.me, rf.currentTerm, DDebug, "-> S%d, Send log, Prev=[%d]T%d, Len()=%d", peer, args.PrevLogIndex, args.PrevLogTerm, len(args.Entries))
