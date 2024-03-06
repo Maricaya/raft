@@ -28,7 +28,7 @@ func TestInitialElectionPartA(t *testing.T) {
 
 	cfg.begin("Test (PartA): initial election")
 
-	// is a leader elected?
+	// is a leader elected? // todo 这块没过，看下怎么解决
 	cfg.checkOneLeader()
 
 	// sleep a bit to avoid racing with followers learning of the
@@ -138,6 +138,7 @@ func TestBasicAgreePartB(t *testing.T) {
 		if nd > 0 {
 			t.Fatalf("some have committed before Start()")
 		}
+
 		xindex := cfg.one(index*100, servers, false)
 		if xindex != index {
 			t.Fatalf("got index %v but expected %v", xindex, index)

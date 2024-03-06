@@ -1,0 +1,3 @@
+# course/raft [course/raft.test]
+./raft.go:346:3: ok declared and not used
+FAIL	course/raft [build failed]
