@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import itertools
 import math
 import signal
@@ -222,7 +223,7 @@ def run_tests(
                         if rc != 0 or archive:
                             output.mkdir(exist_ok=True, parents=True)
                             shutil.copy(path, dest)
-
+ 
                         if timing:
                             line = last_line(path)
                             real, _, user, _, system, _ = line.replace(' '*8, '').split(' ')
