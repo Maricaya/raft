@@ -46,8 +46,8 @@ func (ck *Clerk) Get(key string) string {
 	args := GetArgs{
 		Key: key,
 	}
-	var reply GetReply
 	for {
+		var reply GetReply
 		ok := ck.servers[ck.leaderId].Call("KVServer.Get", &args, &reply)
 		if !ok || reply.Err == ErrWrongLeader || reply.Err == ErrTimeout {
 			// 请求失败，选择另一个节点重试
@@ -57,7 +57,6 @@ func (ck *Clerk) Get(key string) string {
 		// 调用成功，返回 value
 		return reply.Value
 	}
-	return ""
 }
 
 // PutAppend shared by Put and Append.
@@ -77,15 +76,16 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
 		ClientId: ck.clientId,
 		SeqId:    ck.seqId,
 	}
-	var reply PutAppendReply
 	for {
-		ok := ck.servers[ck.leaderId].Call("KVServer.Get", &args, &reply)
+		var reply PutAppendReply
+		ok := ck.servers[ck.leaderId].Call("KVServer.PutAppend", &args, &reply)
 		if !ok || reply.Err == ErrWrongLeader || reply.Err == ErrTimeout {
 			// 请求失败，选择另一个节点重试
 			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
 			continue
 		}
 		// 调用成功，返回
+		ck.seqId++
 		return
 	}
 }

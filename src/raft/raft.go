@@ -30,7 +30,7 @@ const (
 	electionTimeoutMin time.Duration = 250 * time.Millisecond
 	electionTimeoutMax time.Duration = 400 * time.Millisecond
 
-	replicateInterval time.Duration = 70 * time.Millisecond
+	replicateInterval time.Duration = 30 * time.Millisecond
 )
 
 const (
@@ -153,6 +153,12 @@ func (rf *Raft) GetState() (int, bool) {
 	defer rf.mu.Unlock()
 
 	return rf.currentTerm, rf.role == Leader
+}
+
+func (rf *Raft) GetRaftStateSize() int {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	return rf.persister.RaftStateSize()
 }
 
 // the service using Raft (e.g. a k/v server) wants to start

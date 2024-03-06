@@ -1,6 +1,7 @@
 package kvraft
 
 import (
+	"bytes"
 	"course/labgob"
 	"course/labrpc"
 	"course/raft"
@@ -37,7 +38,7 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 		reply.Err = ErrWrongLeader
 		return
 	}
-	// TODO 等待结果
+	// 等待结果
 	kv.mu.Lock()
 	notifyCh := kv.getNotifyChannel(index)
 	kv.mu.Unlock()
@@ -69,8 +70,8 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	kv.mu.Lock()
 	if kv.requestDuplication(args.ClientId, args.SeqId) {
 		// 如果是重复请求，直接返回结果
-		OpReply := kv.duplicateTable[args.ClientId].Reply
-		reply.Err = OpReply.Err
+		opReply := kv.duplicateTable[args.ClientId].Reply
+		reply.Err = opReply.Err
 		kv.mu.Unlock()
 		return
 	}
@@ -161,6 +162,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.notifyChans = make(map[int]chan *OpReply)
 	kv.duplicateTable = make(map[int64]LastOperationInfo)
 
+	// 从 snapshot 中恢复状态
+	kv.restoreFromSnapshot(persister.ReadSnapshot())
+
 	go kv.applyTask()
 	return kv
 }
@@ -182,12 +186,12 @@ func (kv *KVServer) applyTask() {
 				op := message.Command.(Op)
 
 				var opReply *OpReply
-				if op.OpType != OpPut && kv.requestDuplication(op.ClientId, op.SeqId) {
+				if op.OpType != OpGet && kv.requestDuplication(op.ClientId, op.SeqId) {
 					opReply = kv.duplicateTable[op.ClientId].Reply
 				} else {
 					// 将操作应用状态机中
 					opReply = kv.applyToStateMachine(op)
-					if op.OpType != OpPut {
+					if op.OpType != OpGet {
 						kv.duplicateTable[op.ClientId] = LastOperationInfo{
 							SeqId: op.SeqId,
 							Reply: opReply,
@@ -195,14 +199,22 @@ func (kv *KVServer) applyTask() {
 					}
 				}
 
-				// 将操作应用到状态机中
-				opReply = kv.applyToStateMachine(op)
-
 				// 将结果发送回去
 				if _, isLeader := kv.rf.GetState(); isLeader {
 					notifyCh := kv.getNotifyChannel(message.CommandIndex)
 					notifyCh <- opReply
 				}
+
+				// 判断是否需要 snapshot
+				if kv.maxraftstate != -1 && kv.rf.GetRaftStateSize() >= kv.maxraftstate {
+					kv.makeSnapshot(message.CommandIndex)
+				}
+
+				kv.mu.Unlock()
+			} else if message.SnapshotValid {
+				kv.mu.Lock()
+				kv.restoreFromSnapshot(message.Snapshot)
+				kv.lastApplied = message.SnapshotIndex
 				kv.mu.Unlock()
 			}
 		}
@@ -232,4 +244,27 @@ func (kv *KVServer) getNotifyChannel(index int) chan *OpReply {
 
 func (kv *KVServer) removeNotifyChannel(index int) {
 	delete(kv.notifyChans, index)
+}
+
+func (kv *KVServer) makeSnapshot(index int) {
+	buf := new(bytes.Buffer)
+	enc := labgob.NewEncoder(buf)
+	enc.Encode(kv.stateMachine)
+	enc.Encode(kv.duplicateTable)
+	kv.rf.Snapshot(index, buf.Bytes())
+}
+
+func (kv *KVServer) restoreFromSnapshot(snapshot []byte) {
+	if len(snapshot) == 0 {
+		return
+	}
+	buf := bytes.NewBuffer(snapshot)
+	dec := labgob.NewDecoder(buf)
+	var stateMachine MemoryKVStateMachine
+	var dupTable map[int64]LastOperationInfo
+	if dec.Decode(&stateMachine) != nil || dec.Decode(&dupTable) != nil {
+		panic("failed to restore state from snapshot")
+	}
+	kv.stateMachine = &stateMachine
+	kv.duplicateTable = dupTable
 }
