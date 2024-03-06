@@ -7,6 +7,10 @@ import "math/big"
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
+	leaderId int // 记录leaderId，避免下次轮训
+	// clientId + seqId 确定一个唯一的命令
+	//clientId int64
+	//seqId    int64
 }
 
 func nrand() int64 {
@@ -20,10 +24,13 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
+	ck.leaderId = 0
+	//ck.clientId = nrand()
+	//ck.seqId = 0
 	return ck
 }
 
-// fetch the current value for a key.
+// Get fetch the current value for a key.
 // returns "" if the key does not exist.
 // keeps trying forever in the face of all other errors.
 //
@@ -36,10 +43,24 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 func (ck *Clerk) Get(key string) string {
 
 	// You will have to modify this function.
+	args := GetArgs{
+		Key: key,
+	}
+	var reply GetReply
+	for {
+		ok := ck.servers[ck.leaderId].Call("KVServer.Get", &args, &reply)
+		if !ok || reply.Err == ErrWrongLeader || reply.Err == ErrTimeout {
+			// 请求失败，选择另一个节点重试
+			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
+			continue
+		}
+		// 调用成功，返回 value
+		return reply.Value
+	}
 	return ""
 }
 
-// shared by Put and Append.
+// PutAppend shared by Put and Append.
 //
 // you can send an RPC with code like this:
 // ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
@@ -49,6 +70,22 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 func (ck *Clerk) PutAppend(key string, value string, op string) {
 	// You will have to modify this function.
+	args := PutAppendArgs{
+		Key:   key,
+		Value: value,
+		Op:    op,
+	}
+	var reply PutAppendReply
+	for {
+		ok := ck.servers[ck.leaderId].Call("KVServer.Get", &args, &reply)
+		if !ok || reply.Err == ErrWrongLeader || reply.Err == ErrTimeout {
+			// 请求失败，选择另一个节点重试
+			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
+			continue
+		}
+		// 调用成功，返回
+		return
+	}
 }
 
 func (ck *Clerk) Put(key string, value string) {
